@@ -5,307 +5,437 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0f172a" />
   <link rel="manifest" href="manifest.json" />
-  <title>Nio Air Copilot — Winter Smog & IAQ Action Hub</title>
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <title>Nio Air Copilot — Air Quality & Weather Action Hub</title>
   <style>
     :root {
-      --bg: #0b1120;
-      --surface: #131c31;
-      --surface-alt: #1b2640;
-      --border: #2a3958;
-      --text: #f1f5f9;
-      --muted: #94a3b8;
-      --accent: #38bdf8;
-      --green: #22c55e;
-      --yellow: #eab308;
-      --orange: #f97316;
-      --red: #ef4444;
-      --purple: #a855f7;
+      --bg: #0c121e;
+      --surface: rgba(24, 33, 52, 0.78);
+      --surface-solid: #161f33;
+      --surface-pill: rgba(255, 255, 255, 0.08);
+      --border: rgba(255, 255, 255, 0.11);
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+      --subtle: #94a3b8;
+      --accent: #7dd3fc;
+      --green: #4ade80;
+      --yellow: #facc15;
+      --orange: #fb923c;
+      --red: #f87171;
+      --purple: #c084fc;
+      --hero-grad: linear-gradient(145deg, #451a24 0%, #2a1628 48%, #131b2e 100%);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: "Google Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.5;
-      padding-bottom: 4rem;
+      padding-bottom: 4.5rem;
+      min-height: 100vh;
     }
-    header {
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      border-bottom: 1px solid var(--border);
-      padding: 1rem 1.25rem;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+
+    /* Top Minimal Bar */
+    .top-bar {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 1rem 1.25rem 0.5rem;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
       gap: 0.75rem;
     }
-    .brand { display: flex; align-items: center; gap: 0.6rem; }
-    .brand-badge {
-      background: var(--accent);
-      color: #0b1120;
-      font-weight: 800;
-      padding: 0.25rem 0.55rem;
-      border-radius: 6px;
-      font-size: 0.85rem;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
     }
-    .brand h1 { font-size: 1.15rem; font-weight: 700; }
-    .points-pill {
-      background: rgba(34, 197, 94, 0.15);
-      border: 1px solid var(--green);
-      color: #86efac;
-      padding: 0.35rem 0.8rem;
-      border-radius: 999px;
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      border: 1px solid var(--border);
+    }
+    .brand-title {
+      font-size: 1.05rem;
       font-weight: 700;
-      font-size: 0.88rem;
+      letter-spacing: -0.01em;
+    }
+    .points-chip {
+      background: rgba(74, 222, 128, 0.14);
+      border: 1px solid rgba(74, 222, 128, 0.4);
+      color: #bbf7d0;
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 600;
       display: flex;
       align-items: center;
       gap: 0.4rem;
     }
+
     .container {
-      max-width: 1120px;
+      max-width: 960px;
       margin: 0 auto;
-      padding: 1.25rem;
+      padding: 0.75rem 1.25rem;
+      display: grid;
+      gap: 1.15rem;
+    }
+
+    /* Google Weather Style Pill Search Bar */
+    .search-shell {
+      background: var(--surface-solid);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.35rem 0.45rem 0.35rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+    }
+    .search-shell input {
+      flex: 1;
+      min-width: 120px;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .search-shell input::placeholder { color: var(--subtle); }
+    .pill-btn {
+      background: var(--surface-pill);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.48rem 0.95rem;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+    .pill-btn:hover { background: rgba(255, 255, 255, 0.15); }
+    .pill-btn.primary {
+      background: #7dd3fc;
+      color: #082f49;
+      border-color: transparent;
+    }
+    .pill-btn.primary:hover { background: #bae6fd; }
+
+    .city-chips {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .chip {
+      background: var(--surface-pill);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 0.28rem 0.75rem;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+    .chip:hover { color: var(--text); border-color: var(--accent); }
+    .preset-select {
+      margin-left: auto;
+      background: var(--surface-solid);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.28rem 0.75rem;
+      font-size: 0.78rem;
+      outline: none;
+    }
+
+    /* Dynamic Atmospheric Hero Card */
+    .weather-hero {
+      background: var(--hero-grad);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 1.65rem 1.75rem;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
       display: grid;
       gap: 1.25rem;
+      transition: background 0.45s ease;
     }
-    .grap-banner {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-left: 6px solid var(--red);
-      border-radius: 12px;
-      padding: 1.1rem 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.9rem;
-    }
-    .grap-top {
+    .hero-main {
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 1rem;
+      gap: 1.25rem;
     }
-    .aqi-display { display: flex; align-items: baseline; gap: 0.85rem; }
-    .aqi-num { font-size: 2.6rem; font-weight: 800; line-height: 1; }
-    .grap-tag {
-      padding: 0.25rem 0.65rem;
-      border-radius: 6px;
-      font-size: 0.78rem;
+    .hero-location {
+      font-size: 1.35rem;
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: -0.01em;
     }
-    .live-meta {
-      font-size: 0.8rem;
-      color: var(--accent);
-      margin-top: 0.2rem;
-      font-weight: 600;
-    }
-    .controls { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
-    select, input[type="number"], input[type="text"], textarea {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 0.5rem 0.7rem;
-      border-radius: 8px;
-      font-size: 0.88rem;
-    }
-    button {
-      background: var(--accent);
-      color: #0b1120;
-      border: none;
-      padding: 0.5rem 0.85rem;
-      border-radius: 8px;
-      font-weight: 700;
+    .hero-sub {
       font-size: 0.85rem;
-      cursor: pointer;
-      transition: opacity 0.15s ease;
+      color: var(--muted);
+      margin-top: 0.15rem;
     }
-    button:hover { opacity: 0.9; }
-    button.secondary {
-      background: var(--surface-alt);
-      color: var(--text);
-      border: 1px solid var(--border);
+    .hero-score-row {
+      display: flex;
+      align-items: center;
+      gap: 1.1rem;
+      margin-top: 0.65rem;
     }
-    button.danger { background: var(--red); color: #fff; }
-    button.success { background: var(--green); color: #052e16; }
-
-    /* Chart & Indicators Panel */
-    .chart-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.15rem 1.25rem;
+    .hero-aqi {
+      font-size: 4.25rem;
+      font-weight: 700;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+    }
+    .hero-condition {
       display: flex;
       flex-direction: column;
-      gap: 0.8rem;
+      gap: 0.25rem;
     }
-    .chart-header {
+    .status-pill {
+      display: inline-block;
+      padding: 0.28rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      width: fit-content;
+    }
+    .hero-icon-box {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 22px;
+      padding: 0.9rem 1.2rem;
+    }
+    .hero-advice {
+      background: rgba(0, 0, 0, 0.24);
+      border-radius: 16px;
+      padding: 0.8rem 1rem;
+      font-size: 0.9rem;
+      color: #f1f5f9;
+      display: flex;
       align-items: center;
       gap: 0.6rem;
     }
-    .chart-header h2 { font-size: 1.02rem; }
-    .legend-row {
+
+    /* AQI Spectrum Gauge */
+    .spectrum-wrap {
+      display: grid;
+      gap: 0.45rem;
+    }
+    .spectrum-labels {
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.65rem;
-      font-size: 0.75rem;
+      justify-content: space-between;
+      font-size: 0.74rem;
       color: var(--muted);
     }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      padding: 0.2rem 0.5rem;
-      border-radius: 6px;
-    }
-    .dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-    .canvas-wrap {
+    .spectrum-bar {
       position: relative;
-      width: 100%;
-      height: 220px;
-      background: var(--bg);
+      height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #22c55e 0%, #eab308 25%, #f97316 50%, #ef4444 75%, #a855f7 100%);
+    }
+    .spectrum-marker {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 3px solid #0f172a;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+      transition: left 0.4s ease;
+    }
+
+    /* Material You Cards */
+    .m-card {
+      background: var(--surface);
+      backdrop-filter: blur(12px);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.4rem;
-    }
-    #aqiChart {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-    .indicator-strip {
+      border-radius: 24px;
+      padding: 1.25rem 1.35rem;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 0.65rem;
+      gap: 0.95rem;
     }
-    .ind-box {
-      background: var(--surface-alt);
+    .card-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* Google Weather Style Hourly Strip */
+    .hourly-strip {
+      display: flex;
+      gap: 0.6rem;
+      overflow-x: auto;
+      padding-bottom: 0.35rem;
+      scrollbar-width: thin;
+    }
+    .hour-tile {
+      min-width: 72px;
+      background: rgba(12, 18, 30, 0.55);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.55rem 0.75rem;
+      border-radius: 18px;
+      padding: 0.65rem 0.45rem;
+      text-align: center;
       display: flex;
       flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
     }
-    .ind-lbl { font-size: 0.74rem; color: var(--muted); }
-    .ind-val { font-size: 1.05rem; font-weight: 800; margin-top: 0.1rem; }
+    .hour-tile.safe-slot {
+      border-color: rgba(125, 211, 252, 0.45);
+      background: rgba(56, 189, 248, 0.1);
+    }
+    .hour-time { font-size: 0.76rem; color: var(--muted); font-weight: 600; }
+    .hour-emoji { font-size: 1.2rem; }
+    .hour-aqi { font-size: 0.88rem; font-weight: 700; }
 
-    .tabs {
-      display: flex;
-      gap: 0.5rem;
-      overflow-x: auto;
-      padding-bottom: 0.25rem;
+    .canvas-wrap {
+      width: 100%;
+      height: 175px;
+      background: rgba(12, 18, 30, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 0.35rem;
     }
-    .tab-btn {
+    #aqiChart { width: 100%; height: 100%; display: block; }
+
+    /* 4-Tile Conditions Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+    }
+    .metric-tile {
       background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 1rem 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .metric-lbl { font-size: 0.78rem; color: var(--subtle); font-weight: 600; }
+    .metric-val { font-size: 1.35rem; font-weight: 700; }
+    .metric-note { font-size: 0.76rem; color: var(--muted); }
+
+    /* Segmented Material Tabs */
+    .nav-pills {
+      display: flex;
+      gap: 0.45rem;
+      overflow-x: auto;
+      padding: 0.2rem 0;
+    }
+    .nav-pill {
+      background: var(--surface-solid);
       color: var(--muted);
       border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.55rem 1.1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
       white-space: nowrap;
-      padding: 0.55rem 1rem;
     }
-    .tab-btn.active {
-      background: var(--accent);
-      color: #0b1120;
-      border-color: var(--accent);
+    .nav-pill.active {
+      background: #e0f2fe;
+      color: #0c4a6e;
+      border-color: transparent;
     }
+
     .grid-2 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
-      gap: 1.25rem;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
     }
-    .card {
-      background: var(--surface);
+    .timer-display {
+      background: rgba(12, 18, 30, 0.55);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.85rem;
-    }
-    .card h2 {
-      font-size: 1.05rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-    }
-    .subtext { color: var(--muted); font-size: 0.86rem; }
-    .timer-box {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1rem;
+      border-radius: 20px;
+      padding: 1.1rem;
       text-align: center;
     }
-    .timer-clock {
-      font-size: 2rem;
-      font-weight: 800;
+    .timer-digits {
+      font-size: 2.2rem;
+      font-weight: 700;
       font-variant-numeric: tabular-nums;
       color: var(--accent);
-      margin: 0.25rem 0;
+      margin: 0.25rem 0 0.65rem;
     }
-    .checklist { display: grid; gap: 0.55rem; }
-    .check-item {
-      background: var(--surface-alt);
+    .checklist { display: grid; gap: 0.6rem; }
+    .task-row {
+      background: rgba(12, 18, 30, 0.45);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.65rem 0.8rem;
+      border-radius: 16px;
+      padding: 0.75rem 0.9rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 0.6rem;
-      font-size: 0.9rem;
+      gap: 0.75rem;
+      font-size: 0.88rem;
     }
-    .check-item.done { opacity: 0.65; border-color: var(--green); }
-    .stat-row {
+    .task-row.done { opacity: 0.62; border-color: rgba(74, 222, 128, 0.45); }
+    .field-input, .field-select {
+      width: 100%;
+      background: rgba(12, 18, 30, 0.65);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.6rem 0.85rem;
+      border-radius: 14px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .stat-trio {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 0.6rem;
       text-align: center;
     }
-    .stat-box {
-      background: var(--bg);
+    .stat-pill {
+      background: rgba(12, 18, 30, 0.55);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.65rem;
+      border-radius: 16px;
+      padding: 0.75rem 0.5rem;
     }
-    .stat-val { font-size: 1.2rem; font-weight: 800; color: var(--green); }
-    .stat-lbl { font-size: 0.75rem; color: var(--muted); }
-    .list-item {
-      background: var(--surface-alt);
+    .stat-num { font-size: 1.15rem; font-weight: 700; color: var(--green); }
+    .stat-cap { font-size: 0.74rem; color: var(--subtle); }
+    .info-tile {
+      background: rgba(12, 18, 30, 0.45);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.75rem;
+      border-radius: 16px;
+      padding: 0.85rem 1rem;
       display: flex;
       flex-direction: column;
       gap: 0.35rem;
     }
-    .badge-row { display: flex; flex-wrap: wrap; gap: 0.45rem; }
-    .badge {
+    .badge-wrap { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .m-badge {
       font-size: 0.76rem;
-      padding: 0.25rem 0.55rem;
-      border-radius: 6px;
-      background: var(--bg);
+      padding: 0.3rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(12, 18, 30, 0.55);
       border: 1px solid var(--border);
-      color: var(--muted);
+      color: var(--subtle);
     }
-    .badge.unlocked {
-      border-color: var(--yellow);
-      color: #fde047;
-      background: rgba(234, 179, 8, 0.12);
+    .m-badge.unlocked {
+      border-color: rgba(250, 204, 21, 0.5);
+      color: #fef08a;
+      background: rgba(250, 204, 21, 0.12);
     }
     .hidden { display: none !important; }
     .toast {
@@ -315,11 +445,11 @@
       background: #1e293b;
       border: 1px solid var(--accent);
       color: var(--text);
-      padding: 0.75rem 1rem;
-      border-radius: 10px;
-      font-size: 0.88rem;
+      padding: 0.75rem 1.1rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
       font-weight: 600;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.45);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
       z-index: 200;
       opacity: 0;
       transform: translateY(10px);
@@ -329,273 +459,294 @@
     .toast.show { opacity: 1; transform: translateY(0); }
     footer {
       text-align: center;
-      color: var(--muted);
-      font-size: 0.8rem;
+      color: var(--subtle);
+      font-size: 0.78rem;
       margin-top: 1.5rem;
     }
   </style>
 </head>
 <body>
-  <header>
+  <div class="top-bar">
     <div class="brand">
-      <span class="brand-badge">NIO</span>
-      <div>
-        <h1>Nio Air Copilot</h1>
-        <span class="subtext">Live & Offline Winter Smog, IAQ & Community Action Hub</span>
-      </div>
+      <img src="icon.svg" alt="Nio Air Copilot" class="brand-logo" />
+      <span class="brand-title">Nio Air Copilot</span>
     </div>
-    <div class="points-pill" id="pointsPill">
-      <span>★</span> <span id="userPoints">0</span> Clean Points · <span id="userRank">Air Scout</span>
+    <div class="points-chip">
+      <span>★</span> <span id="userPoints">0</span> pts · <span id="userRank">Air Scout</span>
     </div>
-  </header>
+  </div>
 
   <main class="container">
-    <!-- Live AQI & GRAP Protocol Banner -->
-    <section class="grap-banner" id="grapBanner">
-      <div class="grap-top">
-        <div class="aqi-display">
-          <span class="aqi-num" id="aqiValue">385</span>
-          <div>
-            <span class="grap-tag" id="grapBadge" style="background:#ef4444;color:#fff;">GRAP Stage III — Severe</span>
-            <div class="live-meta" id="locationMeta">Mode: Offline Preset · Click GPS or Search City for Live AQI</div>
-            <p class="subtext" id="aqiAdvice" style="margin-top:0.2rem;">
-              Seal indoor gaps, wet-mop floors, and check nearby unhoused shelters.
-            </p>
+    <!-- Google Weather Style Search Bar -->
+    <div class="search-shell">
+      <span style="color:var(--subtle);">🔍</span>
+      <input type="text" id="cityInput" placeholder="Search city (e.g., Indore, Delhi, Bhopal)..." onkeydown="if(event.key==='Enter') searchCityAQI()" />
+      <button class="pill-btn" onclick="detectMyLocation()">📍 My Location</button>
+      <button class="pill-btn primary" onclick="searchCityAQI()">Check</button>
+    </div>
+
+    <div class="city-chips">
+      <button class="chip" onclick="quickCity('Indore')">Indore</button>
+      <button class="chip" onclick="quickCity('Delhi')">New Delhi</button>
+      <button class="chip" onclick="quickCity('Bhopal')">Bhopal</button>
+      <button class="chip" onclick="quickCity('Mumbai')">Mumbai</button>
+      <select class="preset-select" id="profileSelect" onchange="applyManualPreset()" title="Offline Simulation Modes">
+        <option value="">Offline Presets</option>
+        <option value="65">Good Air (AQI 65)</option>
+        <option value="145">Moderate (AQI 145 · GRAP I)</option>
+        <option value="255">Poor Haze (AQI 255 · GRAP II)</option>
+        <option value="385" selected>Severe Smog (AQI 385 · GRAP III)</option>
+        <option value="465">Emergency (AQI 465 · GRAP IV)</option>
+      </select>
+    </div>
+
+    <!-- Dynamic Atmospheric Hero Card -->
+    <section class="weather-hero" id="weatherHero">
+      <div class="hero-main">
+        <div>
+          <div class="hero-location" id="heroLocation">Offline Simulation Mode</div>
+          <div class="hero-sub" id="heroUpdated">Select a city or tap My Location for live satellite & ground telemetry</div>
+          <div class="hero-score-row">
+            <span class="hero-aqi" id="aqiValue">385</span>
+            <div class="hero-condition">
+              <span class="status-pill" id="grapBadge" style="background:#f87171;color:#450a0a;">GRAP Stage III · Severe</span>
+              <span class="hero-sub" id="heroParticulates">PM2.5: 231 µg/m³ · PM10: 310 µg/m³</span>
+            </div>
           </div>
         </div>
-        <div class="controls">
-          <button class="success" onclick="detectMyLocation()">📍 Use My Location</button>
-          <input type="text" id="cityInput" placeholder="City (e.g., Indore, Delhi)" style="width:170px;" onkeydown="if(event.key==='Enter') searchCityAQI()" />
-          <button onclick="searchCityAQI()">Live AQI</button>
-          <select id="profileSelect" onchange="applyManualPreset()" title="Offline Fallback Presets">
-            <option value="">-- Offline Presets --</option>
-            <option value="110">Moderate (AQI 110 — GRAP I)</option>
-            <option value="245">Poor Haze (AQI 245 — GRAP II)</option>
-            <option value="385" selected>Severe Smog (AQI 385 — GRAP III)</option>
-            <option value="465">Emergency (AQI 465 — GRAP IV)</option>
-          </select>
+
+        <div class="hero-icon-box">
+          <span id="heroWeatherEmoji" style="font-size:2.6rem;line-height:1;">🌫️</span>
+          <span id="heroSkyLabel" style="font-size:0.82rem;font-weight:700;color:var(--text);">Dense Winter Smog</span>
         </div>
+      </div>
+
+      <!-- Air Quality Spectrum Bar -->
+      <div class="spectrum-wrap">
+        <div class="spectrum-labels">
+          <span>0 Good</span>
+          <span>100 GRAP I</span>
+          <span>200 GRAP II</span>
+          <span>300 GRAP III</span>
+          <span>400+ GRAP IV</span>
+        </div>
+        <div class="spectrum-bar">
+          <div class="spectrum-marker" id="spectrumMarker" style="left: 77%;"></div>
+        </div>
+      </div>
+
+      <div class="hero-advice">
+        <span>🛡️</span>
+        <span id="aqiAdvice">Seal indoor gaps, wet-mop floors, and route unhoused citizens to night shelters.</span>
       </div>
     </section>
 
-    <!-- 24-Hour AQI Trend Graph & Indicators -->
-    <section class="chart-card">
-      <div class="chart-header">
-        <h2>24-Hour Diurnal Smog Curve & GRAP Threshold Indicators</h2>
-        <div class="legend-row">
-          <span class="legend-item"><span class="dot" style="background:#22c55e;"></span>Good (0–100)</span>
-          <span class="legend-item"><span class="dot" style="background:#eab308;"></span>GRAP I (101–200)</span>
-          <span class="legend-item"><span class="dot" style="background:#f97316;"></span>GRAP II (201–300)</span>
-          <span class="legend-item"><span class="dot" style="background:#ef4444;"></span>GRAP III (301–400)</span>
-          <span class="legend-item"><span class="dot" style="background:#a855f7;"></span>GRAP IV (401+)</span>
-          <span class="legend-item"><span class="dot" style="background:#38bdf8;"></span>1–4 PM Safe Window</span>
-        </div>
+    <!-- Google Weather Style Hourly Strip + Smog Curve -->
+    <section class="m-card">
+      <div class="card-title-row">
+        <span class="card-title">Hourly Air Quality & 24-Hour Dispersion Curve</span>
+        <span style="font-size:0.76rem;color:var(--accent);">Blue highlight = 1–4 PM Safe Window</span>
       </div>
+
+      <div class="hourly-strip" id="hourlyStrip"></div>
 
       <div class="canvas-wrap">
         <canvas id="aqiChart"></canvas>
       </div>
+    </section>
 
-      <div class="indicator-strip">
-        <div class="ind-box">
-          <span class="ind-lbl">24h Peak Smog Hour</span>
-          <span class="ind-val" id="indPeak" style="color:#fca5a5;">--</span>
-        </div>
-        <div class="ind-box">
-          <span class="ind-lbl">Best Ventilation Dip</span>
-          <span class="ind-val" id="indLow" style="color:#86efac;">--</span>
-        </div>
-        <div class="ind-box">
-          <span class="ind-lbl">24h Mean AQI</span>
-          <span class="ind-val" id="indAvg" style="color:#38bdf8;">--</span>
-        </div>
-        <div class="ind-box">
-          <span class="ind-lbl">PM2.5 vs WHO Safe Limit (15 µg/m³)</span>
-          <span class="ind-val" id="indWho" style="color:#fde047;">--</span>
-        </div>
+    <!-- 4-Tile Atmospheric Conditions Grid -->
+    <section class="metrics-grid">
+      <div class="metric-tile">
+        <span class="metric-lbl">24H PEAK SMOG</span>
+        <span class="metric-val" id="indPeak" style="color:var(--red);">--</span>
+        <span class="metric-note">Highest inversion trap</span>
+      </div>
+      <div class="metric-tile">
+        <span class="metric-lbl">BEST VENTILATION DIP</span>
+        <span class="metric-val" id="indLow" style="color:var(--green);">--</span>
+        <span class="metric-note">Lowest outdoor PM2.5</span>
+      </div>
+      <div class="metric-tile">
+        <span class="metric-lbl">24H MEAN AQI</span>
+        <span class="metric-val" id="indAvg" style="color:var(--accent);">--</span>
+        <span class="metric-note">Daily exposure average</span>
+      </div>
+      <div class="metric-tile">
+        <span class="metric-lbl">WHO LIMIT RATIO</span>
+        <span class="metric-val" id="indWho" style="color:var(--yellow);">--</span>
+        <span class="metric-note">Safe baseline: 15 µg/m³</span>
       </div>
     </section>
 
-    <!-- Navigation Tabs -->
-    <nav class="tabs" role="tablist">
-      <button class="tab-btn active" onclick="switchTab('iaq', this)">1. Indoor Air & Timer</button>
-      <button class="tab-btn" onclick="switchTab('bulk', this)">2. Society Group-Buy</button>
-      <button class="tab-btn" onclick="switchTab('shelter', this)">3. Shelter & SOS Hub</button>
-      <button class="tab-btn" onclick="switchTab('civic', this)">4. Report & Points</button>
+    <!-- Segmented Navigation Pills -->
+    <nav class="nav-pills" role="tablist">
+      <button class="nav-pill active" onclick="switchTab('iaq', this)">Indoor Air & Timer</button>
+      <button class="nav-pill" onclick="switchTab('bulk', this)">Society Group-Buy</button>
+      <button class="nav-pill" onclick="switchTab('shelter', this)">Shelter & SOS Hub</button>
+      <button class="nav-pill" onclick="switchTab('civic', this)">Report & Points</button>
     </nav>
 
-    <!-- TAB 1: IAQ & Instant Relief -->
+    <!-- TAB 1: Indoor Air & Timer -->
     <section id="tab-iaq" class="grid-2">
-      <div class="card">
-        <h2>
-          <span>Safe Ventilation Window (1–4 PM)</span>
-          <span class="badge" id="windowStatus">Checking...</span>
-        </h2>
-        <p class="subtext">
-          Winter inversion traps smog near ground level at night and morning. Cross-ventilate briefly only during peak afternoon solar dispersion (1:00 PM – 4:00 PM) when AQI dips.
-        </p>
-        <div class="timer-box">
-          <div class="subtext" id="timerLabel">Time Until Next Safe Window</div>
-          <div class="timer-clock" id="ventTimer">--:--:--</div>
-          <button class="secondary" onclick="startFlushTimer()">Start 15-Min Rapid Air Flush</button>
+      <div class="m-card">
+        <div class="card-title-row">
+          <span class="card-title">Safe Ventilation Window</span>
+          <span class="m-badge" id="windowStatus">Checking...</span>
         </div>
-        <div id="flushBar" class="hidden" style="background:var(--surface-alt);padding:0.65rem;border-radius:8px;text-align:center;font-size:0.88rem;">
-          Active Flush Countdown: <strong id="flushClock">15:00</strong> — Close windows when timer ends!
+        <p style="font-size:0.86rem;color:var(--muted);">
+          Cross-ventilate briefly only during peak afternoon solar dispersion (1:00 PM – 4:00 PM) when ground-level smog lifts.
+        </p>
+        <div class="timer-display">
+          <div style="font-size:0.78rem;color:var(--subtle);" id="timerLabel">Next Safe Window Opens In</div>
+          <div class="timer-digits" id="ventTimer">--:--:--</div>
+          <button class="pill-btn primary" onclick="startFlushTimer()">Start 15-Min Rapid Air Flush</button>
+        </div>
+        <div id="flushBar" class="hidden" style="background:rgba(56,189,248,0.12);padding:0.65rem;border-radius:14px;text-align:center;font-size:0.85rem;">
+          Active Flush: <strong id="flushClock">15:00</strong> — Seal windows when timer finishes
         </div>
       </div>
 
-      <div class="card">
-        <h2>
-          <span>Zero-Cost Instant IAQ Protocol</span>
-          <span class="subtext">+15 pts / task</span>
-        </h2>
-        <p class="subtext">Complete daily indoor actions to trap settled PM2.5 without expensive hardware:</p>
-        <div class="checklist" id="iaqChecklist">
-          <div class="check-item" id="task-mop">
-            <span><strong>Wet-Mop Floors (No Dry Broom)</strong><br><small class="subtext">Prevents re-suspending settled fine dust.</small></span>
-            <button onclick="completeTask('task-mop', 15)">Done (+15)</button>
+      <div class="m-card">
+        <div class="card-title-row">
+          <span class="card-title">Zero-Cost IAQ Checklist</span>
+          <span style="font-size:0.78rem;color:var(--green);">+15 pts each</span>
+        </div>
+        <div class="checklist">
+          <div class="task-row" id="task-mop">
+            <span><strong>Wet-Mop Floors (No Dry Broom)</strong><br><small style="color:var(--subtle);">Traps settled fine dust without re-suspension.</small></span>
+            <button class="pill-btn primary" onclick="completeTask('task-mop', 15)">Done</button>
           </div>
-          <div class="check-item" id="task-seal">
-            <span><strong>Damp Towel Door-Gap Seal</strong><br><small class="subtext">Blocks corridor smog leakage into bedrooms.</small></span>
-            <button onclick="completeTask('task-seal', 15)">Done (+15)</button>
+          <div class="task-row" id="task-seal">
+            <span><strong>Damp Towel Door-Gap Seal</strong><br><small style="color:var(--subtle);">Blocks hallway smog from entering bedrooms.</small></span>
+            <button class="pill-btn primary" onclick="completeTask('task-seal', 15)">Done</button>
           </div>
-          <div class="check-item" id="task-steam">
-            <span><strong>Saline Steam & Exhaust Check</strong><br><small class="subtext">Run kitchen chimney/exhaust while cooking.</small></span>
-            <button onclick="completeTask('task-steam', 15)">Done (+15)</button>
+          <div class="task-row" id="task-steam">
+            <span><strong>Kitchen Exhaust & Steam Check</strong><br><small style="color:var(--subtle);">Ventilate cooking fumes directly outdoors.</small></span>
+            <button class="pill-btn primary" onclick="completeTask('task-steam', 15)">Done</button>
           </div>
-          <div class="check-item" id="task-bio">
-            <span><strong>Natural Bio-Filter Corner</strong><br><small class="subtext">Place Snake Plant / Areca Palm near sleeping area.</small></span>
-            <button onclick="completeTask('task-bio', 15)">Done (+15)</button>
+          <div class="task-row" id="task-bio">
+            <span><strong>Natural Bio-Filter Corner</strong><br><small style="color:var(--subtle);">Snake Plant / Areca Palm near sleeping zone.</small></span>
+            <button class="pill-btn primary" onclick="completeTask('task-bio', 15)">Done</button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- TAB 2: Society Group-Buy Calculator -->
+    <!-- TAB 2: Society Group-Buy -->
     <section id="tab-bulk" class="grid-2 hidden">
-      <div class="card">
-        <h2>Society & RWA Bulk-Buy Calculator</h2>
-        <p class="subtext">
-          Pool orders across apartments to unlock wholesale pricing on HEPA purifiers, N95 family packs, and electric heaters for night security guards.
+      <div class="m-card">
+        <span class="card-title">Society & RWA Bulk-Buy Calculator</span>
+        <p style="font-size:0.86rem;color:var(--muted);">
+          Pool apartment orders for wholesale pricing on HEPA purifiers, N95 family packs, and electric heaters for night guards.
         </p>
-        <div style="display:grid;gap:0.75rem;">
+        <div style="display:grid;gap:0.7rem;">
           <div>
-            <label class="subtext" for="houseCount">Participating Households in Society:</label>
-            <input type="number" id="houseCount" value="25" min="1" max="500" style="width:100%;margin-top:0.25rem;" oninput="calcBulk()" />
+            <label style="font-size:0.78rem;color:var(--subtle);" for="houseCount">Participating Households:</label>
+            <input class="field-input" type="number" id="houseCount" value="25" min="1" max="500" oninput="calcBulk()" />
           </div>
           <div>
-            <label class="subtext" for="itemSelect">Bulk Equipment Bundle:</label>
-            <select id="itemSelect" style="width:100%;margin-top:0.25rem;" onchange="calcBulk()">
+            <label style="font-size:0.78rem;color:var(--subtle);" for="itemSelect">Equipment Bundle:</label>
+            <select class="field-select" id="itemSelect" onchange="calcBulk()">
               <option value="8500">True HEPA H13 Room Purifier (MRP ₹8,500)</option>
               <option value="1200">N95 / FFP2 Family Pack of 10 (MRP ₹1,200)</option>
-              <option value="2400">Guard Post Oil-Free Electric Heater (MRP ₹2,400)</option>
+              <option value="2400">Guard Post Oil-Free Heater (MRP ₹2,400)</option>
             </select>
           </div>
         </div>
-        <div class="stat-row">
-          <div class="stat-box">
-            <div class="stat-val" id="discountPct">22%</div>
-            <div class="stat-lbl">Bulk Tier Discount</div>
+        <div class="stat-trio">
+          <div class="stat-pill">
+            <div class="stat-num" id="discountPct">22%</div>
+            <div class="stat-cap">Discount</div>
           </div>
-          <div class="stat-box">
-            <div class="stat-val" id="unitPrice">₹6,630</div>
-            <div class="stat-lbl">Group Unit Price</div>
+          <div class="stat-pill">
+            <div class="stat-num" id="unitPrice">₹6,630</div>
+            <div class="stat-cap">Unit Price</div>
           </div>
-          <div class="stat-box">
-            <div class="stat-val" id="totalSaved">₹46,750</div>
-            <div class="stat-lbl">Society Total Saved</div>
+          <div class="stat-pill">
+            <div class="stat-num" id="totalSaved">₹46,750</div>
+            <div class="stat-cap">Total Saved</div>
           </div>
         </div>
-        <button class="success" onclick="pledgeGroupBuy()">Log Society Bulk Pledge (+30 Clean Points)</button>
+        <button class="pill-btn primary" onclick="pledgeGroupBuy()">Log Society Pledge (+30 pts)</button>
       </div>
 
-      <div class="card">
-        <h2>Shared Senior Clean-Air Lounge</h2>
-        <p class="subtext">
-          Not every family can afford individual purifiers. Convert one sealed society clubhouse room into a shared daytime clean-air zone for seniors, infants, and outdoor workers.
-        </p>
-        <div class="list-item">
-          <strong>Step 1: Seal & Filter One Common Room</strong>
-          <span class="subtext">2 shared HEPA units + weather-stripped doors protect up to 30 residents during peak smog hours (7 AM – 12 PM).</span>
+      <div class="m-card">
+        <span class="card-title">Shared Senior Clean-Air Lounge</span>
+        <div class="info-tile">
+          <strong>1. Seal One Clubhouse Room</strong>
+          <span style="font-size:0.84rem;color:var(--muted);">2 shared HEPA units protect up to 30 seniors and infants during peak morning smog (7 AM – 12 PM).</span>
         </div>
-        <div class="list-item">
-          <strong>Step 2: Guard Open-Fire Replacement</strong>
-          <span class="subtext">Provide electric heaters at society gates so guards don't burn wood/plastic at night.</span>
+        <div class="info-tile">
+          <strong>2. Replace Guard Open Fires</strong>
+          <span style="font-size:0.84rem;color:var(--muted);">Provide electric heaters at society gates so guards avoid burning wood or plastic at night.</span>
         </div>
       </div>
     </section>
 
-    <!-- TAB 3: Unhoused Shelter & SOS Hub -->
+    <!-- TAB 3: Shelter & SOS Hub -->
     <section id="tab-shelter" class="grid-2 hidden">
-      <div class="card">
-        <h2>Clean-Air Night Shelter Locator</h2>
-        <p class="subtext">
-          Street sleepers face the highest toxic exposure during winter nights. Route vulnerable citizens to verified night shelters (Rain Baseras) or distribute N95 masks.
-        </p>
-        <div class="list-item">
-          <strong>Zone A — Central Bus Terminus Night Shelter</strong>
-          <span class="subtext">Capacity: 60 beds · Filtered indoor hall & warm blankets · 24/7 Open</span>
-          <button class="secondary" style="align-self:flex-start;margin-top:0.25rem;" onclick="awardAction('Shelter Referral Logged', 25)">Log Volunteer Referral (+25 pts)</button>
+      <div class="m-card">
+        <span class="card-title">Clean-Air Night Shelter Locator</span>
+        <div class="info-tile">
+          <strong>Zone A — Central Bus Terminus Rain Basera</strong>
+          <span style="font-size:0.84rem;color:var(--muted);">60 beds · Filtered indoor hall & warm blankets · 24/7 Open</span>
+          <button class="pill-btn" style="width:fit-content;margin-top:0.25rem;" onclick="awardAction('Shelter Referral Logged', 25)">Log Referral (+25 pts)</button>
         </div>
-        <div class="list-item">
+        <div class="info-tile">
           <strong>Zone B — Railway Station East Relief Camp</strong>
-          <span class="subtext">Capacity: 45 beds · Medical checkup & mask distribution desk</span>
-          <button class="secondary" style="align-self:flex-start;margin-top:0.25rem;" onclick="awardAction('Mask Distribution Logged', 25)">Log Mask Drop (+25 pts)</button>
+          <span style="font-size:0.84rem;color:var(--muted);">45 beds · Medical checkup & N95 mask distribution desk</span>
+          <button class="pill-btn" style="width:fit-content;margin-top:0.25rem;" onclick="awardAction('Mask Drop Logged', 25)">Log Mask Drop (+25 pts)</button>
         </div>
       </div>
 
-      <div class="card">
-        <h2>NCAP / GRAP SOS & Community Hub</h2>
-        <p class="subtext">Direct national grievance channels and hyper-local volunteer coordination:</p>
-        <div class="list-item">
-          <strong>Central Pollution Control Board (CPCB) — SAMEER Grievance</strong>
-          <span class="subtext">Report open garbage burning, unpaved road dust, or industrial smoke under NCAP/GRAP.</span>
-          <div style="display:flex;gap:0.5rem;margin-top:0.3rem;">
-            <a href="tel:1800110031" style="text-decoration:none;"><button class="danger">Call Helpline (1800-11-0031)</button></a>
-          </div>
+      <div class="m-card">
+        <span class="card-title">NCAP / GRAP SOS & Community Hub</span>
+        <div class="info-tile">
+          <strong>CPCB SAMEER National Helpline</strong>
+          <span style="font-size:0.84rem;color:var(--muted);">Report open garbage burning, road dust, or industrial smoke under NCAP/GRAP.</span>
+          <a href="tel:1800110031" style="text-decoration:none;margin-top:0.25rem;"><button class="pill-btn" style="background:#ef4444;color:#fff;border:none;">Call 1800-11-0031</button></a>
         </div>
-        <div class="list-item">
-          <strong>Ward-Level WhatsApp Action Circle</strong>
-          <span class="subtext">Coordinate mask drives, water sprinkling alerts, and shelter transport with local volunteers.</span>
-          <button class="success" style="align-self:flex-start;margin-top:0.3rem;" onclick="copyWhatsAppInvite()">Copy Community WhatsApp Alert Template</button>
+        <div class="info-tile">
+          <strong>Ward WhatsApp Action Alert</strong>
+          <span style="font-size:0.84rem;color:var(--muted);">Share live AQI guidance and night shelter locations with neighbors.</span>
+          <button class="pill-btn primary" style="width:fit-content;margin-top:0.25rem;" onclick="copyWhatsAppInvite()">Copy WhatsApp Alert</button>
         </div>
       </div>
     </section>
 
-    <!-- TAB 4: Civic Reporting & Zero-Budget Points -->
+    <!-- TAB 4: Civic Reporting & Points -->
     <section id="tab-civic" class="grid-2 hidden">
-      <div class="card">
-        <h2>Report Local Pollution Hazard</h2>
-        <p class="subtext">Log local violations to generate an instant structured alert for municipal dispatch and earn Clean Points.</p>
-        <select id="hazardType">
+      <div class="m-card">
+        <span class="card-title">Report Local Pollution Hazard</span>
+        <select class="field-select" id="hazardType">
           <option value="Open Garbage / Leaf Burning">Open Garbage / Leaf Burning</option>
           <option value="Uncovered Construction Dust">Uncovered Construction Dust</option>
           <option value="Unhoused Citizens Needing Shelter">Unhoused Citizens Needing Shelter</option>
           <option value="Industrial / Generator Smoke">Industrial / Generator Smoke</option>
         </select>
-        <input type="text" id="hazardLoc" placeholder="Landmark / Ward / Sector (e.g., Near Main Market)" />
-        <button onclick="submitHazardReport()">Dispatch Alert & Earn +40 Points</button>
-        <div id="recentReports" class="checklist" style="margin-top:0.5rem;"></div>
+        <input class="field-input" type="text" id="hazardLoc" placeholder="Landmark / Ward / Sector (e.g., Vijay Nagar)" />
+        <button class="pill-btn primary" onclick="submitHazardReport()">Dispatch Alert (+40 pts)</button>
+        <div id="recentReports" class="checklist"></div>
       </div>
 
-      <div class="card">
-        <h2>Zero-Budget Civic Recognition</h2>
-        <p class="subtext">Points unlock verified civic badges and society rankings—no cash payouts required.</p>
-        <div class="badge-row" id="badgeContainer">
-          <span class="badge unlocked">Air Scout (0 pts)</span>
-          <span class="badge" id="b-50">IAQ Defender (50 pts)</span>
-          <span class="badge" id="b-120">Shelter Ally (120 pts)</span>
-          <span class="badge" id="b-250">Clean Air Champion (250 pts)</span>
+      <div class="m-card">
+        <span class="card-title">Civic Badges & Ward Standings</span>
+        <div class="badge-wrap">
+          <span class="m-badge unlocked">Air Scout (0)</span>
+          <span class="m-badge" id="b-50">IAQ Defender (50)</span>
+          <span class="m-badge" id="b-120">Shelter Ally (120)</span>
+          <span class="m-badge" id="b-250">Clean Air Champion (250)</span>
         </div>
-        <div class="list-item" style="margin-top:0.5rem;" id="leaderboardBox">
-          <strong>Society Leaderboard (Live Ranking)</strong>
+        <div class="info-tile" id="leaderboardBox">
+          <strong>Society Leaderboard</strong>
         </div>
       </div>
     </section>
   </main>
 
   <footer>
-    Nio Air Copilot · Live GPS/City AQI, Trend Analytics & Offline PWA · Aligned with NCAP & GRAP
+    Nio Air Copilot · Live GPS/City Telemetry & Offline PWA · Aligned with NCAP & GRAP
   </footer>
 
   <div class="toast" id="toast"></div>
@@ -623,7 +774,6 @@
       setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    // Convert PM2.5 (µg/m³) to Indian NAQI (CPCB Breakpoints)
     function pm25ToIndianAQI(pm) {
       if (pm <= 30) return Math.round((pm / 30) * 50);
       if (pm <= 60) return Math.round(51 + ((pm - 30) / 30) * 49);
@@ -633,7 +783,6 @@
       return Math.min(500, Math.round(401 + ((pm - 250) / 130) * 99));
     }
 
-    // Approximate PM2.5 from NAQI for WHO indicator when offline preset is selected
     function indianAQIToPM25(aqi) {
       if (aqi <= 50) return Math.round((aqi / 50) * 30);
       if (aqi <= 100) return Math.round(30 + ((aqi - 50) / 50) * 30);
@@ -644,14 +793,21 @@
     }
 
     function getAQIColor(aqi) {
-      if (aqi <= 100) return '#22c55e';
-      if (aqi <= 200) return '#eab308';
-      if (aqi <= 300) return '#f97316';
-      if (aqi <= 400) return '#ef4444';
-      return '#a855f7';
+      if (aqi <= 100) return '#4ade80';
+      if (aqi <= 200) return '#facc15';
+      if (aqi <= 300) return '#fb923c';
+      if (aqi <= 400) return '#f87171';
+      return '#c084fc';
     }
 
-    // Generate realistic 24-hour winter inversion curve around a base AQI (peaks at 8 AM & 10 PM, dips at 2-3 PM)
+    function getHourEmoji(hourStr, aqi) {
+      const hr = parseInt(hourStr.split(':')[0] || '12', 10);
+      const isNight = hr < 6 || hr >= 19;
+      if (aqi > 300) return '🌫️';
+      if (aqi > 150) return isNight ? '☁️' : '⛅';
+      return isNight ? '🌙' : '☀️';
+    }
+
     function buildOfflineSeries(baseAqi) {
       const factors = [
         1.08, 1.05, 1.02, 1.00, 1.03, 1.09,
@@ -662,6 +818,22 @@
       const labels = Array.from({ length: 24 }, (_, h) => `${String(h).padStart(2, '0')}:00`);
       const values = factors.map(f => Math.min(500, Math.max(25, Math.round(baseAqi * f))));
       return { labels, values };
+    }
+
+    function renderHourlyStrip(labels, values) {
+      const strip = document.getElementById('hourlyStrip');
+      strip.innerHTML = labels.map((lbl, idx) => {
+        const val = values[idx];
+        const hr = parseInt(lbl.split(':')[0] || '0', 10);
+        const isSafe = hr >= 13 && hr <= 16;
+        return `
+          <div class="hour-tile ${isSafe ? 'safe-slot' : ''}">
+            <span class="hour-time">${lbl}</span>
+            <span class="hour-emoji">${getHourEmoji(lbl, val)}</span>
+            <span class="hour-aqi" style="color:${getAQIColor(val)};">${val}</span>
+          </div>
+        `;
+      }).join('');
     }
 
     function updateIndicatorsAndChart(labels, values, pm25Val) {
@@ -681,11 +853,12 @@
       const avg = Math.round(sum / values.length);
       const whoRatio = (pm25Val / 15).toFixed(1);
 
-      document.getElementById('indPeak').textContent = `${maxVal} AQI (${labels[maxIdx]})`;
-      document.getElementById('indLow').textContent = `${minVal} AQI (${labels[minIdx]})`;
+      document.getElementById('indPeak').textContent = `${maxVal} (${labels[maxIdx]})`;
+      document.getElementById('indLow').textContent = `${minVal} (${labels[minIdx]})`;
       document.getElementById('indAvg').textContent = `${avg} AQI`;
-      document.getElementById('indWho').textContent = `${whoRatio}x Limit (${pm25Val} µg/m³)`;
+      document.getElementById('indWho').textContent = `${whoRatio}x Limit`;
 
+      renderHourlyStrip(labels, values);
       drawAQIChart();
     }
 
@@ -695,15 +868,15 @@
 
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.parentElement.getBoundingClientRect();
-      canvas.width = (rect.width - 14) * dpr;
-      canvas.height = (rect.height - 14) * dpr;
+      canvas.width = (rect.width - 12) * dpr;
+      canvas.height = (rect.height - 12) * dpr;
 
       const ctx = canvas.getContext('2d');
       ctx.scale(dpr, dpr);
 
       const W = canvas.width / dpr;
       const H = canvas.height / dpr;
-      const padL = 38, padR = 14, padT = 16, padB = 26;
+      const padL = 34, padR = 14, padT = 14, padB = 22;
       const plotW = W - padL - padR;
       const plotH = H - padT - padB;
 
@@ -713,32 +886,19 @@
       const yFor = (val) => padT + plotH - (val / maxScale) * plotH;
       const xFor = (idx) => padL + (idx / Math.max(1, currentHourlySeries.length - 1)) * plotW;
 
-      // Highlight Safe Ventilation Window (13:00 to 16:00) if present in labels
       const idx13 = currentLabels.findIndex(l => l.startsWith('13:'));
       const idx16 = currentLabels.findIndex(l => l.startsWith('16:'));
       if (idx13 !== -1 && idx16 !== -1 && idx16 > idx13) {
         const x1 = xFor(idx13);
         const x2 = xFor(idx16);
-        ctx.fillStyle = 'rgba(56, 189, 248, 0.12)';
+        ctx.fillStyle = 'rgba(125, 211, 252, 0.12)';
         ctx.fillRect(x1, padT, x2 - x1, plotH);
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = '600 10px sans-serif';
-        ctx.fillText('1–4 PM Safe Window', x1 + 4, padT + 11);
       }
 
-      // GRAP Threshold Lines (100, 200, 300, 400)
-      const thresholds = [
-        { val: 100, color: 'rgba(34, 197, 94, 0.35)', lbl: '100' },
-        { val: 200, color: 'rgba(234, 179, 8, 0.35)', lbl: '200 (GRAP I)' },
-        { val: 300, color: 'rgba(249, 115, 22, 0.35)', lbl: '300 (GRAP II)' },
-        { val: 400, color: 'rgba(239, 68, 68, 0.45)', lbl: '400 (GRAP III)' }
-      ];
-
-      ctx.lineWidth = 1;
-      thresholds.forEach(t => {
-        if (t.val > maxScale) return;
-        const y = yFor(t.val);
-        ctx.strokeStyle = t.color;
+      [100, 200, 300, 400].forEach(val => {
+        if (val > maxScale) return;
+        const y = yFor(val);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
         ctx.setLineDash([4, 4]);
         ctx.beginPath();
         ctx.moveTo(padL, y);
@@ -748,14 +908,12 @@
         ctx.setLineDash([]);
         ctx.fillStyle = '#94a3b8';
         ctx.font = '10px sans-serif';
-        ctx.fillText(t.val, 4, y + 3);
+        ctx.fillText(val, 4, y + 3);
       });
 
-      // Area Gradient under Curve
       const grad = ctx.createLinearGradient(0, padT, 0, padT + plotH);
-      grad.addColorStop(0, 'rgba(239, 68, 68, 0.32)');
-      grad.addColorStop(0.6, 'rgba(249, 115, 22, 0.12)');
-      grad.addColorStop(1, 'rgba(34, 197, 94, 0.02)');
+      grad.addColorStop(0, 'rgba(125, 211, 252, 0.28)');
+      grad.addColorStop(1, 'rgba(125, 211, 252, 0.01)');
 
       ctx.beginPath();
       currentHourlySeries.forEach((v, i) => {
@@ -770,10 +928,9 @@
       ctx.fillStyle = grad;
       ctx.fill();
 
-      // Main Trend Line
       ctx.beginPath();
       ctx.lineWidth = 2.5;
-      ctx.strokeStyle = '#f8fafc';
+      ctx.strokeStyle = '#7dd3fc';
       currentHourlySeries.forEach((v, i) => {
         const x = xFor(i);
         const y = yFor(v);
@@ -782,89 +939,121 @@
       });
       ctx.stroke();
 
-      // Color-coded Indicator Dots + X-axis Hour Labels
       currentHourlySeries.forEach((v, i) => {
         const x = xFor(i);
         const y = yFor(v);
 
         ctx.beginPath();
-        ctx.arc(x, y, 3.6, 0, Math.PI * 2);
+        ctx.arc(x, y, 3.4, 0, Math.PI * 2);
         ctx.fillStyle = getAQIColor(v);
         ctx.fill();
-        ctx.strokeStyle = '#0b1120';
-        ctx.lineWidth = 1;
-        ctx.stroke();
 
-        if (i % 3 === 0) {
+        if (i % 4 === 0) {
           ctx.fillStyle = '#94a3b8';
           ctx.font = '10px sans-serif';
-          ctx.fillText(currentLabels[i], x - 12, H - 7);
+          ctx.fillText(currentLabels[i], x - 12, H - 5);
         }
       });
     }
 
-    function renderAQIBanner(aqi, metaText) {
+    function renderHeroCard(aqi, locationTitle, updatedText, particulatesText) {
       document.getElementById('aqiValue').textContent = aqi;
-      document.getElementById('locationMeta').textContent = metaText;
+      document.getElementById('heroLocation').textContent = locationTitle;
+      document.getElementById('heroUpdated').textContent = updatedText;
+      document.getElementById('heroParticulates').textContent = particulatesText;
+
+      const pct = Math.min(98, Math.max(2, (aqi / 500) * 100));
+      document.getElementById('spectrumMarker').style.left = `${pct}%`;
+
       const badge = document.getElementById('grapBadge');
       const advice = document.getElementById('aqiAdvice');
-      const banner = document.getElementById('grapBanner');
+      const hero = document.getElementById('weatherHero');
+      const emoji = document.getElementById('heroWeatherEmoji');
+      const sky = document.getElementById('heroSkyLabel');
 
       let cfg;
       if (aqi <= 100) {
         cfg = {
-          label: 'Satisfactory — Standard Protocol',
-          color: '#22c55e',
-          text: '#052e16',
-          advice: 'Air quality is acceptable. Keep daily wet-mopping active to prevent indoor dust buildup.'
+          label: 'Good · Standard Protocol',
+          bg: '#4ade80',
+          fg: '#052e16',
+          grad: 'linear-gradient(145deg, #0d3b3e 0%, #112d42 50%, #131b2e 100%)',
+          emoji: '☀️',
+          sky: 'Clear & Breathable',
+          advice: 'Air quality is good. Keep daily wet-mopping active to prevent indoor dust buildup.'
         };
       } else if (aqi <= 200) {
         cfg = {
-          label: 'GRAP Stage I — Moderate',
-          color: '#eab308',
-          text: '#0b1120',
+          label: 'GRAP Stage I · Moderate',
+          bg: '#facc15',
+          fg: '#422006',
+          grad: 'linear-gradient(145deg, #3f3214 0%, #2b2623 50%, #131b2e 100%)',
+          emoji: '⛅',
+          sky: 'Light Urban Haze',
           advice: 'Keep windows closed during peak traffic; wet-mop floors once daily.'
         };
       } else if (aqi <= 300) {
         cfg = {
-          label: 'GRAP Stage II — Poor',
-          color: '#f97316',
-          text: '#fff',
-          advice: 'Restrict outdoor exertion for seniors/children; run water sprinkling on dusty lanes.'
+          label: 'GRAP Stage II · Poor',
+          bg: '#fb923c',
+          fg: '#431407',
+          grad: 'linear-gradient(145deg, #4a2515 0%, #311d24 50%, #131b2e 100%)',
+          emoji: '🌥️',
+          sky: 'Moderate Smog Layer',
+          advice: 'Restrict outdoor exertion for seniors and children; sprinkle water on dusty lanes.'
         };
       } else if (aqi <= 400) {
         cfg = {
-          label: 'GRAP Stage III — Severe',
-          color: '#ef4444',
-          text: '#fff',
+          label: 'GRAP Stage III · Severe',
+          bg: '#f87171',
+          fg: '#450a0a',
+          grad: 'linear-gradient(145deg, #451a24 0%, #2a1628 48%, #131b2e 100%)',
+          emoji: '🌫️',
+          sky: 'Dense Winter Smog',
           advice: 'Seal indoor gaps, wet-mop floors, and route unhoused citizens to night shelters.'
         };
       } else {
         cfg = {
-          label: 'GRAP Stage IV — Emergency',
-          color: '#a855f7',
-          text: '#fff',
-          advice: 'Strict indoor isolation; activate shared society clean-air lounges & SOS dispatch.'
+          label: 'GRAP Stage IV · Emergency',
+          bg: '#c084fc',
+          fg: '#2e1065',
+          grad: 'linear-gradient(145deg, #35184a 0%, #241536 48%, #131b2e 100%)',
+          emoji: '⚠️',
+          sky: 'Hazardous Inversion',
+          advice: 'Strict indoor isolation; activate shared society clean-air lounges and SOS dispatch.'
         };
       }
 
       badge.textContent = cfg.label;
-      badge.style.background = cfg.color;
-      badge.style.color = cfg.text;
+      badge.style.background = cfg.bg;
+      badge.style.color = cfg.fg;
+      hero.style.background = cfg.grad;
+      emoji.textContent = cfg.emoji;
+      sky.textContent = cfg.sky;
       advice.textContent = cfg.advice;
-      banner.style.borderLeftColor = cfg.color;
     }
 
     function applyManualPreset() {
       const val = parseInt(document.getElementById('profileSelect').value, 10);
       if (!val) return;
-      renderAQIBanner(val, 'Mode: Offline Manual Preset');
+      const pm25 = indianAQIToPM25(val);
+      renderHeroCard(
+        val,
+        'Offline Simulation Mode',
+        'Preset scenario · Works 100% without internet',
+        `Est. PM2.5: ${pm25} µg/m³`
+      );
       const series = buildOfflineSeries(val);
-      updateIndicatorsAndChart(series.labels, series.values, indianAQIToPM25(val));
+      updateIndicatorsAndChart(series.labels, series.values, pm25);
+    }
+
+    function quickCity(name) {
+      document.getElementById('cityInput').value = name;
+      searchCityAQI();
     }
 
     async function fetchAQIByCoords(lat, lon, placeLabel) {
-      document.getElementById('locationMeta').textContent = `Fetching live readings & 24h curve for ${placeLabel}...`;
+      document.getElementById('heroUpdated').textContent = `Syncing live telemetry for ${placeLabel}...`;
       try {
         const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=pm2_5,pm10&hourly=pm2_5&forecast_days=1&timezone=auto`;
         const res = await fetch(url);
@@ -873,7 +1062,6 @@
         const pm10 = data.current.pm10;
         const aqi = pm25ToIndianAQI(pm25);
         const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const meta = `LIVE · ${placeLabel} · PM2.5: ${pm25} µg/m³ · PM10: ${pm10} µg/m³ (Updated ${timeStr})`;
 
         const hourlyTimes = (data.hourly && data.hourly.time) ? data.hourly.time.slice(0, 24) : [];
         const hourlyPM = (data.hourly && data.hourly.pm2_5) ? data.hourly.pm2_5.slice(0, 24) : [];
@@ -888,27 +1076,32 @@
           values = fallback.values;
         }
 
+        const updatedText = `Live Telemetry · Updated ${timeStr}`;
+        const particulatesText = `PM2.5: ${pm25} µg/m³ · PM10: ${pm10} µg/m³`;
+
         document.getElementById('profileSelect').value = '';
-        state.lastLiveAQI = { aqi, meta, labels, values, pm25 };
+        state.lastLiveAQI = { aqi, placeLabel, updatedText, particulatesText, labels, values, pm25 };
         saveState();
-        renderAQIBanner(aqi, meta);
+
+        renderHeroCard(aqi, placeLabel, updatedText, particulatesText);
         updateIndicatorsAndChart(labels, values, pm25);
-        showToast(`Live AQI & 24h chart loaded for ${placeLabel}: ${aqi}`);
+        showToast(`Updated ${placeLabel}: ${aqi} AQI`);
       } catch (err) {
-        showToast('Offline or network error — using cached/preset AQI.');
+        showToast('Offline — showing cached or preset air quality.');
         if (state.lastLiveAQI) {
-          renderAQIBanner(state.lastLiveAQI.aqi, 'CACHED OFFLINE · ' + state.lastLiveAQI.meta);
-          updateIndicatorsAndChart(state.lastLiveAQI.labels, state.lastLiveAQI.values, state.lastLiveAQI.pm25);
+          const c = state.lastLiveAQI;
+          renderHeroCard(c.aqi, c.placeLabel, `Cached Offline · ${c.updatedText}`, c.particulatesText);
+          updateIndicatorsAndChart(c.labels, c.values, c.pm25);
         }
       }
     }
 
     function detectMyLocation() {
       if (!navigator.geolocation) {
-        showToast('Geolocation not supported; search a city name instead.');
+        showToast('Geolocation not supported; search a city instead.');
         return;
       }
-      document.getElementById('locationMeta').textContent = 'Requesting GPS permission...';
+      document.getElementById('heroUpdated').textContent = 'Requesting GPS permission...';
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const { latitude, longitude } = pos.coords;
@@ -924,8 +1117,8 @@
           fetchAQIByCoords(latitude, longitude, label);
         },
         () => {
-          showToast('Location permission denied — type any city name instead.');
-          document.getElementById('locationMeta').textContent = 'GPS blocked · Enter a city name or select Offline Preset';
+          showToast('Location permission denied — tap a city chip instead.');
+          document.getElementById('heroUpdated').textContent = 'GPS unavailable · Search any city above';
         },
         { timeout: 8000 }
       );
@@ -934,10 +1127,10 @@
     async function searchCityAQI() {
       const query = document.getElementById('cityInput').value.trim();
       if (!query) {
-        showToast('Enter a city name first (e.g., Indore, Bhopal, Delhi).');
+        showToast('Type a city name first (e.g., Indore, Delhi).');
         return;
       }
-      document.getElementById('locationMeta').textContent = `Searching "${query}"...`;
+      document.getElementById('heroUpdated').textContent = `Finding "${query}"...`;
       try {
         const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`);
         const data = await res.json();
@@ -946,10 +1139,10 @@
           return;
         }
         const place = data.results[0];
-        const label = [place.name, place.admin1, place.country].filter(Boolean).join(', ');
+        const label = [place.name, place.admin1].filter(Boolean).join(', ');
         fetchAQIByCoords(place.latitude, place.longitude, label);
       } catch (err) {
-        showToast('Unable to search city while offline.');
+        showToast('Unable to search while offline.');
       }
     }
 
@@ -958,7 +1151,7 @@
         document.getElementById('tab-' + id).classList.add('hidden');
       });
       document.getElementById('tab-' + tabId).classList.remove('hidden');
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.nav-pill').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
     }
 
@@ -977,14 +1170,14 @@
       if (now >= start && now < end) {
         statusEl.textContent = 'SAFE WINDOW OPEN';
         statusEl.style.color = '#86efac';
-        statusEl.style.borderColor = '#22c55e';
-        labelEl.textContent = 'Safe Ventilation Closes In';
+        statusEl.style.borderColor = '#4ade80';
+        labelEl.textContent = 'Safe Window Closes In';
         diffMs = end - now;
       } else {
-        statusEl.textContent = 'KEEP WINDOWS SEALED';
+        statusEl.textContent = 'KEEP SEALED';
         statusEl.style.color = '#fca5a5';
-        statusEl.style.borderColor = '#ef4444';
-        labelEl.textContent = 'Next Safe Window (1:00 PM) Opens In';
+        statusEl.style.borderColor = '#f87171';
+        labelEl.textContent = 'Next Safe Window (1:00 PM) In';
         if (now >= end) start.setDate(start.getDate() + 1);
         diffMs = start - now;
       }
@@ -1058,51 +1251,48 @@
     function pledgeGroupBuy() {
       state.points += 30;
       saveState();
-      showToast('+30 Clean Points for Society Group-Buy Pledge!');
+      showToast('+30 Clean Points for Society Pledge!');
     }
 
     function awardAction(label, pts) {
       state.points += pts;
       saveState();
-      showToast(`${label} (+${pts} Clean Points)`);
+      showToast(`${label} (+${pts} pts)`);
     }
 
     function copyWhatsAppInvite() {
       const aqi = document.getElementById('aqiValue').textContent;
-      const meta = document.getElementById('locationMeta').textContent;
-      const msg = `[Nio Air Copilot Alert] AQI is ${aqi} (${meta}). Keep indoor doors sealed until 1 PM, wet-mop floors, and help route street sleepers to the nearest Rain Basera shelter.`;
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(msg);
-      }
-      showToast('WhatsApp community alert copied to clipboard!');
+      const loc = document.getElementById('heroLocation').textContent;
+      const msg = `[Nio Air Copilot Alert] ${loc}: AQI is ${aqi}. Keep doors sealed until 1 PM, wet-mop floors, and help route street sleepers to the nearest Rain Basera shelter.`;
+      if (navigator.clipboard) navigator.clipboard.writeText(msg);
+      showToast('WhatsApp alert copied to clipboard!');
     }
 
     function submitHazardReport() {
       const type = document.getElementById('hazardType').value;
       const loc = document.getElementById('hazardLoc').value.trim();
       if (!loc) {
-        showToast('Please enter a landmark or ward location first.');
+        showToast('Enter a landmark or ward first.');
         return;
       }
-      const entry = {
+      state.reports.unshift({
         type,
         loc,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      state.reports.unshift(entry);
+      });
       state.points += 40;
       document.getElementById('hazardLoc').value = '';
       saveState();
       renderReports();
-      showToast('Alert queued for municipal dispatch (+40 pts)!');
+      showToast('Civic alert dispatched (+40 pts)!');
     }
 
     function renderReports() {
       const box = document.getElementById('recentReports');
       box.innerHTML = state.reports.slice(0, 4).map(r => `
-        <div class="list-item">
+        <div class="info-tile">
           <strong>${r.type} — ${r.loc}</strong>
-          <span class="subtext">Dispatched at ${r.time} · Status: Logged for Civic Action</span>
+          <span style="font-size:0.78rem;color:var(--subtle);">Dispatched at ${r.time}</span>
         </div>
       `).join('');
     }
@@ -1128,8 +1318,8 @@
       ].sort((a, b) => b.pts - a.pts);
 
       const lb = document.getElementById('leaderboardBox');
-      lb.innerHTML = '<strong>Society Leaderboard (Live Ranking)</strong>' + standings.map((s, idx) => `
-        <span class="subtext" style="${s.isUser ? 'color:#86efac;font-weight:700;' : ''}">
+      lb.innerHTML = '<strong>Society Leaderboard</strong>' + standings.map((s, idx) => `
+        <span style="font-size:0.84rem;${s.isUser ? 'color:#86efac;font-weight:700;' : 'color:var(--muted);'}">
           ${idx + 1}. ${s.name} — ${s.pts.toLocaleString('en-IN')} pts
         </span>
       `).join('');
@@ -1137,10 +1327,10 @@
 
     window.addEventListener('resize', drawAQIChart);
 
-    // Initialize App
     if (state.lastLiveAQI && state.lastLiveAQI.labels && !navigator.onLine) {
-      renderAQIBanner(state.lastLiveAQI.aqi, 'CACHED OFFLINE · ' + state.lastLiveAQI.meta);
-      updateIndicatorsAndChart(state.lastLiveAQI.labels, state.lastLiveAQI.values, state.lastLiveAQI.pm25);
+      const c = state.lastLiveAQI;
+      renderHeroCard(c.aqi, c.placeLabel, `Cached Offline · ${c.updatedText}`, c.particulatesText);
+      updateIndicatorsAndChart(c.labels, c.values, c.pm25);
     } else {
       applyManualPreset();
     }
