@@ -133,6 +133,76 @@
     button.danger { background: var(--red); color: #fff; }
     button.success { background: var(--green); color: #052e16; }
 
+    /* Chart & Indicators Panel */
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.15rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+    .chart-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .chart-header h2 { font-size: 1.02rem; }
+    .legend-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+    }
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .canvas-wrap {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.4rem;
+    }
+    #aqiChart {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .indicator-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.65rem;
+    }
+    .ind-box {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.55rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .ind-lbl { font-size: 0.74rem; color: var(--muted); }
+    .ind-val { font-size: 1.05rem; font-weight: 800; margin-top: 0.1rem; }
+
     .tabs {
       display: flex;
       gap: 0.5rem;
@@ -304,6 +374,44 @@
             <option value="385" selected>Severe Smog (AQI 385 — GRAP III)</option>
             <option value="465">Emergency (AQI 465 — GRAP IV)</option>
           </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- 24-Hour AQI Trend Graph & Indicators -->
+    <section class="chart-card">
+      <div class="chart-header">
+        <h2>24-Hour Diurnal Smog Curve & GRAP Threshold Indicators</h2>
+        <div class="legend-row">
+          <span class="legend-item"><span class="dot" style="background:#22c55e;"></span>Good (0–100)</span>
+          <span class="legend-item"><span class="dot" style="background:#eab308;"></span>GRAP I (101–200)</span>
+          <span class="legend-item"><span class="dot" style="background:#f97316;"></span>GRAP II (201–300)</span>
+          <span class="legend-item"><span class="dot" style="background:#ef4444;"></span>GRAP III (301–400)</span>
+          <span class="legend-item"><span class="dot" style="background:#a855f7;"></span>GRAP IV (401+)</span>
+          <span class="legend-item"><span class="dot" style="background:#38bdf8;"></span>1–4 PM Safe Window</span>
+        </div>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="aqiChart"></canvas>
+      </div>
+
+      <div class="indicator-strip">
+        <div class="ind-box">
+          <span class="ind-lbl">24h Peak Smog Hour</span>
+          <span class="ind-val" id="indPeak" style="color:#fca5a5;">--</span>
+        </div>
+        <div class="ind-box">
+          <span class="ind-lbl">Best Ventilation Dip</span>
+          <span class="ind-val" id="indLow" style="color:#86efac;">--</span>
+        </div>
+        <div class="ind-box">
+          <span class="ind-lbl">24h Mean AQI</span>
+          <span class="ind-val" id="indAvg" style="color:#38bdf8;">--</span>
+        </div>
+        <div class="ind-box">
+          <span class="ind-lbl">PM2.5 vs WHO Safe Limit (15 µg/m³)</span>
+          <span class="ind-val" id="indWho" style="color:#fde047;">--</span>
         </div>
       </div>
     </section>
@@ -487,7 +595,7 @@
   </main>
 
   <footer>
-    Nio Air Copilot · Live GPS/City AQI & Offline-Ready PWA · Aligned with NCAP & GRAP
+    Nio Air Copilot · Live GPS/City AQI, Trend Analytics & Offline PWA · Aligned with NCAP & GRAP
   </footer>
 
   <div class="toast" id="toast"></div>
@@ -499,6 +607,9 @@
       reports: [],
       lastLiveAQI: null
     };
+
+    let currentHourlySeries = [];
+    let currentLabels = [];
 
     function saveState() {
       localStorage.setItem('nio_air_state', JSON.stringify(state));
@@ -520,6 +631,176 @@
       if (pm <= 120) return Math.round(201 + ((pm - 90) / 30) * 99);
       if (pm <= 250) return Math.round(301 + ((pm - 120) / 130) * 99);
       return Math.min(500, Math.round(401 + ((pm - 250) / 130) * 99));
+    }
+
+    // Approximate PM2.5 from NAQI for WHO indicator when offline preset is selected
+    function indianAQIToPM25(aqi) {
+      if (aqi <= 50) return Math.round((aqi / 50) * 30);
+      if (aqi <= 100) return Math.round(30 + ((aqi - 50) / 50) * 30);
+      if (aqi <= 200) return Math.round(60 + ((aqi - 100) / 100) * 30);
+      if (aqi <= 300) return Math.round(90 + ((aqi - 200) / 100) * 30);
+      if (aqi <= 400) return Math.round(120 + ((aqi - 300) / 100) * 130);
+      return Math.round(250 + ((aqi - 400) / 100) * 130);
+    }
+
+    function getAQIColor(aqi) {
+      if (aqi <= 100) return '#22c55e';
+      if (aqi <= 200) return '#eab308';
+      if (aqi <= 300) return '#f97316';
+      if (aqi <= 400) return '#ef4444';
+      return '#a855f7';
+    }
+
+    // Generate realistic 24-hour winter inversion curve around a base AQI (peaks at 8 AM & 10 PM, dips at 2-3 PM)
+    function buildOfflineSeries(baseAqi) {
+      const factors = [
+        1.08, 1.05, 1.02, 1.00, 1.03, 1.09,
+        1.16, 1.22, 1.24, 1.15, 1.02, 0.88,
+        0.78, 0.72, 0.69, 0.73, 0.82, 0.94,
+        1.05, 1.14, 1.20, 1.23, 1.18, 1.12
+      ];
+      const labels = Array.from({ length: 24 }, (_, h) => `${String(h).padStart(2, '0')}:00`);
+      const values = factors.map(f => Math.min(500, Math.max(25, Math.round(baseAqi * f))));
+      return { labels, values };
+    }
+
+    function updateIndicatorsAndChart(labels, values, pm25Val) {
+      currentLabels = labels;
+      currentHourlySeries = values;
+
+      let maxVal = -1, maxIdx = 0;
+      let minVal = 9999, minIdx = 0;
+      let sum = 0;
+
+      values.forEach((v, idx) => {
+        sum += v;
+        if (v > maxVal) { maxVal = v; maxIdx = idx; }
+        if (v < minVal) { minVal = v; minIdx = idx; }
+      });
+
+      const avg = Math.round(sum / values.length);
+      const whoRatio = (pm25Val / 15).toFixed(1);
+
+      document.getElementById('indPeak').textContent = `${maxVal} AQI (${labels[maxIdx]})`;
+      document.getElementById('indLow').textContent = `${minVal} AQI (${labels[minIdx]})`;
+      document.getElementById('indAvg').textContent = `${avg} AQI`;
+      document.getElementById('indWho').textContent = `${whoRatio}x Limit (${pm25Val} µg/m³)`;
+
+      drawAQIChart();
+    }
+
+    function drawAQIChart() {
+      const canvas = document.getElementById('aqiChart');
+      if (!canvas || !currentHourlySeries.length) return;
+
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = (rect.width - 14) * dpr;
+      canvas.height = (rect.height - 14) * dpr;
+
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      const W = canvas.width / dpr;
+      const H = canvas.height / dpr;
+      const padL = 38, padR = 14, padT = 16, padB = 26;
+      const plotW = W - padL - padR;
+      const plotH = H - padT - padB;
+
+      ctx.clearRect(0, 0, W, H);
+
+      const maxScale = Math.max(450, ...currentHourlySeries);
+      const yFor = (val) => padT + plotH - (val / maxScale) * plotH;
+      const xFor = (idx) => padL + (idx / Math.max(1, currentHourlySeries.length - 1)) * plotW;
+
+      // Highlight Safe Ventilation Window (13:00 to 16:00) if present in labels
+      const idx13 = currentLabels.findIndex(l => l.startsWith('13:'));
+      const idx16 = currentLabels.findIndex(l => l.startsWith('16:'));
+      if (idx13 !== -1 && idx16 !== -1 && idx16 > idx13) {
+        const x1 = xFor(idx13);
+        const x2 = xFor(idx16);
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.12)';
+        ctx.fillRect(x1, padT, x2 - x1, plotH);
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = '600 10px sans-serif';
+        ctx.fillText('1–4 PM Safe Window', x1 + 4, padT + 11);
+      }
+
+      // GRAP Threshold Lines (100, 200, 300, 400)
+      const thresholds = [
+        { val: 100, color: 'rgba(34, 197, 94, 0.35)', lbl: '100' },
+        { val: 200, color: 'rgba(234, 179, 8, 0.35)', lbl: '200 (GRAP I)' },
+        { val: 300, color: 'rgba(249, 115, 22, 0.35)', lbl: '300 (GRAP II)' },
+        { val: 400, color: 'rgba(239, 68, 68, 0.45)', lbl: '400 (GRAP III)' }
+      ];
+
+      ctx.lineWidth = 1;
+      thresholds.forEach(t => {
+        if (t.val > maxScale) return;
+        const y = yFor(t.val);
+        ctx.strokeStyle = t.color;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(W - padR, y);
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '10px sans-serif';
+        ctx.fillText(t.val, 4, y + 3);
+      });
+
+      // Area Gradient under Curve
+      const grad = ctx.createLinearGradient(0, padT, 0, padT + plotH);
+      grad.addColorStop(0, 'rgba(239, 68, 68, 0.32)');
+      grad.addColorStop(0.6, 'rgba(249, 115, 22, 0.12)');
+      grad.addColorStop(1, 'rgba(34, 197, 94, 0.02)');
+
+      ctx.beginPath();
+      currentHourlySeries.forEach((v, i) => {
+        const x = xFor(i);
+        const y = yFor(v);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.lineTo(xFor(currentHourlySeries.length - 1), padT + plotH);
+      ctx.lineTo(xFor(0), padT + plotH);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Main Trend Line
+      ctx.beginPath();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#f8fafc';
+      currentHourlySeries.forEach((v, i) => {
+        const x = xFor(i);
+        const y = yFor(v);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      // Color-coded Indicator Dots + X-axis Hour Labels
+      currentHourlySeries.forEach((v, i) => {
+        const x = xFor(i);
+        const y = yFor(v);
+
+        ctx.beginPath();
+        ctx.arc(x, y, 3.6, 0, Math.PI * 2);
+        ctx.fillStyle = getAQIColor(v);
+        ctx.fill();
+        ctx.strokeStyle = '#0b1120';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        if (i % 3 === 0) {
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '10px sans-serif';
+          ctx.fillText(currentLabels[i], x - 12, H - 7);
+        }
+      });
     }
 
     function renderAQIBanner(aqi, metaText) {
@@ -578,12 +859,14 @@
       const val = parseInt(document.getElementById('profileSelect').value, 10);
       if (!val) return;
       renderAQIBanner(val, 'Mode: Offline Manual Preset');
+      const series = buildOfflineSeries(val);
+      updateIndicatorsAndChart(series.labels, series.values, indianAQIToPM25(val));
     }
 
     async function fetchAQIByCoords(lat, lon, placeLabel) {
-      document.getElementById('locationMeta').textContent = `Fetching live readings for ${placeLabel}...`;
+      document.getElementById('locationMeta').textContent = `Fetching live readings & 24h curve for ${placeLabel}...`;
       try {
-        const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=pm2_5,pm10`;
+        const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=pm2_5,pm10&hourly=pm2_5&forecast_days=1&timezone=auto`;
         const res = await fetch(url);
         const data = await res.json();
         const pm25 = data.current.pm2_5;
@@ -592,15 +875,30 @@
         const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const meta = `LIVE · ${placeLabel} · PM2.5: ${pm25} µg/m³ · PM10: ${pm10} µg/m³ (Updated ${timeStr})`;
 
+        const hourlyTimes = (data.hourly && data.hourly.time) ? data.hourly.time.slice(0, 24) : [];
+        const hourlyPM = (data.hourly && data.hourly.pm2_5) ? data.hourly.pm2_5.slice(0, 24) : [];
+
+        let labels, values;
+        if (hourlyTimes.length && hourlyPM.length) {
+          labels = hourlyTimes.map(t => t.split('T')[1] || t);
+          values = hourlyPM.map(v => pm25ToIndianAQI(v || pm25));
+        } else {
+          const fallback = buildOfflineSeries(aqi);
+          labels = fallback.labels;
+          values = fallback.values;
+        }
+
         document.getElementById('profileSelect').value = '';
-        state.lastLiveAQI = { aqi, meta };
+        state.lastLiveAQI = { aqi, meta, labels, values, pm25 };
         saveState();
         renderAQIBanner(aqi, meta);
-        showToast(`Live AQI loaded for ${placeLabel}: ${aqi}`);
+        updateIndicatorsAndChart(labels, values, pm25);
+        showToast(`Live AQI & 24h chart loaded for ${placeLabel}: ${aqi}`);
       } catch (err) {
         showToast('Offline or network error — using cached/preset AQI.');
         if (state.lastLiveAQI) {
           renderAQIBanner(state.lastLiveAQI.aqi, 'CACHED OFFLINE · ' + state.lastLiveAQI.meta);
+          updateIndicatorsAndChart(state.lastLiveAQI.labels, state.lastLiveAQI.values, state.lastLiveAQI.pm25);
         }
       }
     }
@@ -837,9 +1135,12 @@
       `).join('');
     }
 
+    window.addEventListener('resize', drawAQIChart);
+
     // Initialize App
-    if (state.lastLiveAQI && !navigator.onLine) {
+    if (state.lastLiveAQI && state.lastLiveAQI.labels && !navigator.onLine) {
       renderAQIBanner(state.lastLiveAQI.aqi, 'CACHED OFFLINE · ' + state.lastLiveAQI.meta);
+      updateIndicatorsAndChart(state.lastLiveAQI.labels, state.lastLiveAQI.values, state.lastLiveAQI.pm25);
     } else {
       applyManualPreset();
     }
