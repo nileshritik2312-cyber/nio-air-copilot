@@ -78,13 +78,18 @@
       border-radius: 12px;
       padding: 1.1rem 1.25rem;
       display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+    .grap-top {
+      display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
       gap: 1rem;
     }
-    .aqi-display { display: flex; align-items: baseline; gap: 0.75rem; }
-    .aqi-num { font-size: 2.5rem; font-weight: 800; line-height: 1; }
+    .aqi-display { display: flex; align-items: baseline; gap: 0.85rem; }
+    .aqi-num { font-size: 2.6rem; font-weight: 800; line-height: 1; }
     .grap-tag {
       padding: 0.25rem 0.65rem;
       border-radius: 6px;
@@ -93,6 +98,12 @@
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
+    .live-meta {
+      font-size: 0.8rem;
+      color: var(--accent);
+      margin-top: 0.2rem;
+      font-weight: 600;
+    }
     .controls { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
     select, input[type="number"], input[type="text"], textarea {
       background: var(--bg);
@@ -100,16 +111,16 @@
       color: var(--text);
       padding: 0.5rem 0.7rem;
       border-radius: 8px;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
     }
     button {
       background: var(--accent);
       color: #0b1120;
       border: none;
-      padding: 0.5rem 0.9rem;
+      padding: 0.5rem 0.85rem;
       border-radius: 8px;
       font-weight: 700;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       cursor: pointer;
       transition: opacity 0.15s ease;
     }
@@ -260,7 +271,7 @@
       <span class="brand-badge">NIO</span>
       <div>
         <h1>Nio Air Copilot</h1>
-        <span class="subtext">Winter Smog, IAQ & Community Action Hub</span>
+        <span class="subtext">Live & Offline Winter Smog, IAQ & Community Action Hub</span>
       </div>
     </div>
     <div class="points-pill" id="pointsPill">
@@ -271,25 +282,29 @@
   <main class="container">
     <!-- Live AQI & GRAP Protocol Banner -->
     <section class="grap-banner" id="grapBanner">
-      <div>
+      <div class="grap-top">
         <div class="aqi-display">
           <span class="aqi-num" id="aqiValue">385</span>
           <div>
             <span class="grap-tag" id="grapBadge" style="background:#ef4444;color:#fff;">GRAP Stage III — Severe</span>
-            <p class="subtext" id="aqiAdvice" style="margin-top:0.25rem;">
+            <div class="live-meta" id="locationMeta">Mode: Offline Preset · Click GPS or Search City for Live AQI</div>
+            <p class="subtext" id="aqiAdvice" style="margin-top:0.2rem;">
               Seal indoor gaps, wet-mop floors, and check nearby unhoused shelters.
             </p>
           </div>
         </div>
-      </div>
-      <div class="controls">
-        <label for="profileSelect" class="subtext">Air Profile:</label>
-        <select id="profileSelect" onchange="updateAQIProfile()">
-          <option value="110">Moderate Morning (AQI 110 — GRAP I)</option>
-          <option value="245">Poor Haze (AQI 245 — GRAP II)</option>
-          <option value="385" selected>Severe Winter Smog (AQI 385 — GRAP III)</option>
-          <option value="465">Emergency Peak (AQI 465 — GRAP IV)</option>
-        </select>
+        <div class="controls">
+          <button class="success" onclick="detectMyLocation()">📍 Use My Location</button>
+          <input type="text" id="cityInput" placeholder="City (e.g., Indore, Delhi)" style="width:170px;" onkeydown="if(event.key==='Enter') searchCityAQI()" />
+          <button onclick="searchCityAQI()">Live AQI</button>
+          <select id="profileSelect" onchange="applyManualPreset()" title="Offline Fallback Presets">
+            <option value="">-- Offline Presets --</option>
+            <option value="110">Moderate (AQI 110 — GRAP I)</option>
+            <option value="245">Poor Haze (AQI 245 — GRAP II)</option>
+            <option value="385" selected>Severe Smog (AQI 385 — GRAP III)</option>
+            <option value="465">Emergency (AQI 465 — GRAP IV)</option>
+          </select>
+        </div>
       </div>
     </section>
 
@@ -465,14 +480,14 @@
           <span class="badge" id="b-250">Clean Air Champion (250 pts)</span>
         </div>
         <div class="list-item" style="margin-top:0.5rem;" id="leaderboardBox">
-          <strong>Society Leaderboard (Demo Snapshot)</strong>
+          <strong>Society Leaderboard (Live Ranking)</strong>
         </div>
       </div>
     </section>
   </main>
 
   <footer>
-    Nio Air Copilot · Offline-Ready PWA · Aligned with NCAP & GRAP Emergency Frameworks
+    Nio Air Copilot · Live GPS/City AQI & Offline-Ready PWA · Aligned with NCAP & GRAP
   </footer>
 
   <div class="toast" id="toast"></div>
@@ -481,34 +496,8 @@
     let state = JSON.parse(localStorage.getItem('nio_air_state')) || {
       points: 0,
       completedTasks: [],
-      reports: []
-    };
-
-    const grapProfiles = {
-      110: {
-        badge: 'GRAP Stage I — Moderate',
-        color: '#eab308',
-        text: '#0b1120',
-        advice: 'Keep windows closed during morning traffic; wet-mop floors once daily.'
-      },
-      245: {
-        badge: 'GRAP Stage II — Poor',
-        color: '#f97316',
-        text: '#fff',
-        advice: 'Restrict outdoor exertion for seniors/children; run water sprinkling on dusty lanes.'
-      },
-      385: {
-        badge: 'GRAP Stage III — Severe',
-        color: '#ef4444',
-        text: '#fff',
-        advice: 'Seal indoor gaps, wet-mop floors, and route unhoused citizens to night shelters.'
-      },
-      465: {
-        badge: 'GRAP Stage IV — Emergency',
-        color: '#a855f7',
-        text: '#fff',
-        advice: 'Strict indoor isolation; activate shared society clean-air lounges & SOS dispatch.'
-      }
+      reports: [],
+      lastLiveAQI: null
     };
 
     function saveState() {
@@ -520,19 +509,150 @@
       const t = document.getElementById('toast');
       t.textContent = msg;
       t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 2800);
+      setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    function updateAQIProfile() {
-      const val = document.getElementById('profileSelect').value;
-      const p = grapProfiles[val];
-      document.getElementById('aqiValue').textContent = val;
+    // Convert PM2.5 (µg/m³) to Indian NAQI (CPCB Breakpoints)
+    function pm25ToIndianAQI(pm) {
+      if (pm <= 30) return Math.round((pm / 30) * 50);
+      if (pm <= 60) return Math.round(51 + ((pm - 30) / 30) * 49);
+      if (pm <= 90) return Math.round(101 + ((pm - 60) / 30) * 99);
+      if (pm <= 120) return Math.round(201 + ((pm - 90) / 30) * 99);
+      if (pm <= 250) return Math.round(301 + ((pm - 120) / 130) * 99);
+      return Math.min(500, Math.round(401 + ((pm - 250) / 130) * 99));
+    }
+
+    function renderAQIBanner(aqi, metaText) {
+      document.getElementById('aqiValue').textContent = aqi;
+      document.getElementById('locationMeta').textContent = metaText;
       const badge = document.getElementById('grapBadge');
-      badge.textContent = p.badge;
-      badge.style.background = p.color;
-      badge.style.color = p.text;
-      document.getElementById('aqiAdvice').textContent = p.advice;
-      document.getElementById('grapBanner').style.borderLeftColor = p.color;
+      const advice = document.getElementById('aqiAdvice');
+      const banner = document.getElementById('grapBanner');
+
+      let cfg;
+      if (aqi <= 100) {
+        cfg = {
+          label: 'Satisfactory — Standard Protocol',
+          color: '#22c55e',
+          text: '#052e16',
+          advice: 'Air quality is acceptable. Keep daily wet-mopping active to prevent indoor dust buildup.'
+        };
+      } else if (aqi <= 200) {
+        cfg = {
+          label: 'GRAP Stage I — Moderate',
+          color: '#eab308',
+          text: '#0b1120',
+          advice: 'Keep windows closed during peak traffic; wet-mop floors once daily.'
+        };
+      } else if (aqi <= 300) {
+        cfg = {
+          label: 'GRAP Stage II — Poor',
+          color: '#f97316',
+          text: '#fff',
+          advice: 'Restrict outdoor exertion for seniors/children; run water sprinkling on dusty lanes.'
+        };
+      } else if (aqi <= 400) {
+        cfg = {
+          label: 'GRAP Stage III — Severe',
+          color: '#ef4444',
+          text: '#fff',
+          advice: 'Seal indoor gaps, wet-mop floors, and route unhoused citizens to night shelters.'
+        };
+      } else {
+        cfg = {
+          label: 'GRAP Stage IV — Emergency',
+          color: '#a855f7',
+          text: '#fff',
+          advice: 'Strict indoor isolation; activate shared society clean-air lounges & SOS dispatch.'
+        };
+      }
+
+      badge.textContent = cfg.label;
+      badge.style.background = cfg.color;
+      badge.style.color = cfg.text;
+      advice.textContent = cfg.advice;
+      banner.style.borderLeftColor = cfg.color;
+    }
+
+    function applyManualPreset() {
+      const val = parseInt(document.getElementById('profileSelect').value, 10);
+      if (!val) return;
+      renderAQIBanner(val, 'Mode: Offline Manual Preset');
+    }
+
+    async function fetchAQIByCoords(lat, lon, placeLabel) {
+      document.getElementById('locationMeta').textContent = `Fetching live readings for ${placeLabel}...`;
+      try {
+        const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=pm2_5,pm10`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const pm25 = data.current.pm2_5;
+        const pm10 = data.current.pm10;
+        const aqi = pm25ToIndianAQI(pm25);
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const meta = `LIVE · ${placeLabel} · PM2.5: ${pm25} µg/m³ · PM10: ${pm10} µg/m³ (Updated ${timeStr})`;
+
+        document.getElementById('profileSelect').value = '';
+        state.lastLiveAQI = { aqi, meta };
+        saveState();
+        renderAQIBanner(aqi, meta);
+        showToast(`Live AQI loaded for ${placeLabel}: ${aqi}`);
+      } catch (err) {
+        showToast('Offline or network error — using cached/preset AQI.');
+        if (state.lastLiveAQI) {
+          renderAQIBanner(state.lastLiveAQI.aqi, 'CACHED OFFLINE · ' + state.lastLiveAQI.meta);
+        }
+      }
+    }
+
+    function detectMyLocation() {
+      if (!navigator.geolocation) {
+        showToast('Geolocation not supported; search a city name instead.');
+        return;
+      }
+      document.getElementById('locationMeta').textContent = 'Requesting GPS permission...';
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+          let label = `${latitude.toFixed(2)}°N, ${longitude.toFixed(2)}°E`;
+          try {
+            const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            const geoData = await geoRes.json();
+            const addr = geoData.address || {};
+            const city = addr.city || addr.town || addr.village || addr.county || '';
+            const stateName = addr.state || '';
+            if (city) label = stateName ? `${city}, ${stateName}` : city;
+          } catch (_) {}
+          fetchAQIByCoords(latitude, longitude, label);
+        },
+        () => {
+          showToast('Location permission denied — type any city name instead.');
+          document.getElementById('locationMeta').textContent = 'GPS blocked · Enter a city name or select Offline Preset';
+        },
+        { timeout: 8000 }
+      );
+    }
+
+    async function searchCityAQI() {
+      const query = document.getElementById('cityInput').value.trim();
+      if (!query) {
+        showToast('Enter a city name first (e.g., Indore, Bhopal, Delhi).');
+        return;
+      }
+      document.getElementById('locationMeta').textContent = `Searching "${query}"...`;
+      try {
+        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`);
+        const data = await res.json();
+        if (!data.results || !data.results.length) {
+          showToast(`City "${query}" not found.`);
+          return;
+        }
+        const place = data.results[0];
+        const label = [place.name, place.admin1, place.country].filter(Boolean).join(', ');
+        fetchAQIByCoords(place.latitude, place.longitude, label);
+      } catch (err) {
+        showToast('Unable to search city while offline.');
+      }
     }
 
     function switchTab(tabId, btn) {
@@ -651,7 +771,8 @@
 
     function copyWhatsAppInvite() {
       const aqi = document.getElementById('aqiValue').textContent;
-      const msg = `[Nio Air Copilot Alert] Local AQI is ${aqi}. Keep indoor doors sealed until 1 PM, wet-mop floors, and help route street sleepers to the nearest Rain Basera shelter.`;
+      const meta = document.getElementById('locationMeta').textContent;
+      const msg = `[Nio Air Copilot Alert] AQI is ${aqi} (${meta}). Keep indoor doors sealed until 1 PM, wet-mop floors, and help route street sleepers to the nearest Rain Basera shelter.`;
       if (navigator.clipboard) {
         navigator.clipboard.writeText(msg);
       }
@@ -717,7 +838,11 @@
     }
 
     // Initialize App
-    updateAQIProfile();
+    if (state.lastLiveAQI && !navigator.onLine) {
+      renderAQIBanner(state.lastLiveAQI.aqi, 'CACHED OFFLINE · ' + state.lastLiveAQI.meta);
+    } else {
+      applyManualPreset();
+    }
     updateVentilationClock();
     setInterval(updateVentilationClock, 1000);
     calcBulk();
@@ -725,7 +850,6 @@
     renderReports();
     renderPoints();
 
-    // Register Offline Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch(() => {});
