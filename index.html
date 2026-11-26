@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="manifest" href="manifest.json" />
+  <title>Nio Air Copilot — Winter Smog & IAQ Action Hub</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --surface: #131c31;
+      --surface-alt: #1b2640;
+      --border: #2a3958;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --orange: #f97316;
+      --red: #ef4444;
+      --purple: #a855f7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 4rem;
+    }
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.25rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand { display: flex; align-items: center; gap: 0.6rem; }
+    .brand-badge {
+      background: var(--accent);
+      color: #0b1120;
+      font-weight: 800;
+      padding: 0.25rem 0.55rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+    .brand h1 { font-size: 1.15rem; font-weight: 700; }
+    .points-pill {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid var(--green);
+      color: #86efac;
+      padding: 0.35rem 0.8rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 1.25rem;
+      display: grid;
+      gap: 1.25rem;
+    }
+    .grap-banner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 6px solid var(--red);
+      border-radius: 12px;
+      padding: 1.1rem 1.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .aqi-display { display: flex; align-items: baseline; gap: 0.75rem; }
+    .aqi-num { font-size: 2.5rem; font-weight: 800; line-height: 1; }
+    .grap-tag {
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .controls { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    select, input[type="number"], input[type="text"], textarea {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem 0.7rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    button {
+      background: var(--accent);
+      color: #0b1120;
+      border: none;
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+    }
+    button:hover { opacity: 0.9; }
+    button.secondary {
+      background: var(--surface-alt);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    button.danger { background: var(--red); color: #fff; }
+    button.success { background: var(--green); color: #052e16; }
+
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.25rem;
+    }
+    .tab-btn {
+      background: var(--surface);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+      padding: 0.55rem 1rem;
+    }
+    .tab-btn.active {
+      background: var(--accent);
+      color: #0b1120;
+      border-color: var(--accent);
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 1.25rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .card h2 {
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .subtext { color: var(--muted); font-size: 0.86rem; }
+    .timer-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .timer-clock {
+      font-size: 2rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: var(--accent);
+      margin: 0.25rem 0;
+    }
+    .checklist { display: grid; gap: 0.55rem; }
+    .check-item {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.9rem;
+    }
+    .check-item.done { opacity: 0.65; border-color: var(--green); }
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.6rem;
+      text-align: center;
+    }
+    .stat-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem;
+    }
+    .stat-val { font-size: 1.2rem; font-weight: 800; color: var(--green); }
+    .stat-lbl { font-size: 0.75rem; color: var(--muted); }
+    .list-item {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .badge {
+      font-size: 0.76rem;
+      padding: 0.25rem 0.55rem;
+      border-radius: 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .badge.unlocked {
+      border-color: var(--yellow);
+      color: #fde047;
+      background: rgba(234, 179, 8, 0.12);
+    }
+    .hidden { display: none !important; }
+    .toast {
+      position: fixed;
+      bottom: 1.25rem;
+      right: 1.25rem;
+      background: #1e293b;
+      border: 1px solid var(--accent);
+      color: var(--text);
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.45);
+      z-index: 200;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.2s ease;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="brand-badge">NIO</span>
+      <div>
+        <h1>Nio Air Copilot</h1>
+        <span class="subtext">Winter Smog, IAQ & Community Action Hub</span>
+      </div>
+    </div>
+    <div class="points-pill" id="pointsPill">
+      <span>★</span> <span id="userPoints">0</span> Clean Points · <span id="userRank">Air Scout</span>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Live AQI & GRAP Protocol Banner -->
+    <section class="grap-banner" id="grapBanner">
+      <div>
+        <div class="aqi-display">
+          <span class="aqi-num" id="aqiValue">385</span>
+          <div>
+            <span class="grap-tag" id="grapBadge" style="background:#ef4444;color:#fff;">GRAP Stage III — Severe</span>
+            <p class="subtext" id="aqiAdvice" style="margin-top:0.25rem;">
+              Seal indoor gaps, wet-mop floors, and check nearby unhoused shelters.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <label for="profileSelect" class="subtext">Air Profile:</label>
+        <select id="profileSelect" onchange="updateAQIProfile()">
+          <option value="110">Moderate Morning (AQI 110 — GRAP I)</option>
+          <option value="245">Poor Haze (AQI 245 — GRAP II)</option>
+          <option value="385" selected>Severe Winter Smog (AQI 385 — GRAP III)</option>
+          <option value="465">Emergency Peak (AQI 465 — GRAP IV)</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs" role="tablist">
+      <button class="tab-btn active" onclick="switchTab('iaq', this)">1. Indoor Air & Timer</button>
+      <button class="tab-btn" onclick="switchTab('bulk', this)">2. Society Group-Buy</button>
+      <button class="tab-btn" onclick="switchTab('shelter', this)">3. Shelter & SOS Hub</button>
+      <button class="tab-btn" onclick="switchTab('civic', this)">4. Report & Points</button>
+    </nav>
+
+    <!-- TAB 1: IAQ & Instant Relief -->
+    <section id="tab-iaq" class="grid-2">
+      <div class="card">
+        <h2>
+          <span>Safe Ventilation Window (1–4 PM)</span>
+          <span class="badge" id="windowStatus">Checking...</span>
+        </h2>
+        <p class="subtext">
+          Winter inversion traps smog near ground level at night and morning. Cross-ventilate briefly only during peak afternoon solar dispersion (1:00 PM – 4:00 PM) when AQI dips.
+        </p>
+        <div class="timer-box">
+          <div class="subtext" id="timerLabel">Time Until Next Safe Window</div>
+          <div class="timer-clock" id="ventTimer">--:--:--</div>
+          <button class="secondary" onclick="startFlushTimer()">Start 15-Min Rapid Air Flush</button>
+        </div>
+        <div id="flushBar" class="hidden" style="background:var(--surface-alt);padding:0.65rem;border-radius:8px;text-align:center;font-size:0.88rem;">
+          Active Flush Countdown: <strong id="flushClock">15:00</strong> — Close windows when timer ends!
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>
+          <span>Zero-Cost Instant IAQ Protocol</span>
+          <span class="subtext">+15 pts / task</span>
+        </h2>
+        <p class="subtext">Complete daily indoor actions to trap settled PM2.5 without expensive hardware:</p>
+        <div class="checklist" id="iaqChecklist">
+          <div class="check-item" id="task-mop">
+            <span><strong>Wet-Mop Floors (No Dry Broom)</strong><br><small class="subtext">Prevents re-suspending settled fine dust.</small></span>
+            <button onclick="completeTask('task-mop', 15)">Done (+15)</button>
+          </div>
+          <div class="check-item" id="task-seal">
+            <span><strong>Damp Towel Door-Gap Seal</strong><br><small class="subtext">Blocks corridor smog leakage into bedrooms.</small></span>
+            <button onclick="completeTask('task-seal', 15)">Done (+15)</button>
+          </div>
+          <div class="check-item" id="task-steam">
+            <span><strong>Saline Steam & Exhaust Check</strong><br><small class="subtext">Run kitchen chimney/exhaust while cooking.</small></span>
+            <button onclick="completeTask('task-steam', 15)">Done (+15)</button>
+          </div>
+          <div class="check-item" id="task-bio">
+            <span><strong>Natural Bio-Filter Corner</strong><br><small class="subtext">Place Snake Plant / Areca Palm near sleeping area.</small></span>
+            <button onclick="completeTask('task-bio', 15)">Done (+15)</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: Society Group-Buy Calculator -->
+    <section id="tab-bulk" class="grid-2 hidden">
+      <div class="card">
+        <h2>Society & RWA Bulk-Buy Calculator</h2>
+        <p class="subtext">
+          Pool orders across apartments to unlock wholesale pricing on HEPA purifiers, N95 family packs, and electric heaters for night security guards.
+        </p>
+        <div style="display:grid;gap:0.75rem;">
+          <div>
+            <label class="subtext" for="houseCount">Participating Households in Society:</label>
+            <input type="number" id="houseCount" value="25" min="1" max="500" style="width:100%;margin-top:0.25rem;" oninput="calcBulk()" />
+          </div>
+          <div>
+            <label class="subtext" for="itemSelect">Bulk Equipment Bundle:</label>
+            <select id="itemSelect" style="width:100%;margin-top:0.25rem;" onchange="calcBulk()">
+              <option value="8500">True HEPA H13 Room Purifier (MRP ₹8,500)</option>
+              <option value="1200">N95 / FFP2 Family Pack of 10 (MRP ₹1,200)</option>
+              <option value="2400">Guard Post Oil-Free Electric Heater (MRP ₹2,400)</option>
+            </select>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-box">
+            <div class="stat-val" id="discountPct">22%</div>
+            <div class="stat-lbl">Bulk Tier Discount</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="unitPrice">₹6,630</div>
+            <div class="stat-lbl">Group Unit Price</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="totalSaved">₹46,750</div>
+            <div class="stat-lbl">Society Total Saved</div>
+          </div>
+        </div>
+        <button class="success" onclick="pledgeGroupBuy()">Log Society Bulk Pledge (+30 Clean Points)</button>
+      </div>
+
+      <div class="card">
+        <h2>Shared Senior Clean-Air Lounge</h2>
+        <p class="subtext">
+          Not every family can afford individual purifiers. Convert one sealed society clubhouse room into a shared daytime clean-air zone for seniors, infants, and outdoor workers.
+        </p>
+        <div class="list-item">
+          <strong>Step 1: Seal & Filter One Common Room</strong>
+          <span class="subtext">2 shared HEPA units + weather-stripped doors protect up to 30 residents during peak smog hours (7 AM – 12 PM).</span>
+        </div>
+        <div class="list-item">
+          <strong>Step 2: Guard Open-Fire Replacement</strong>
+          <span class="subtext">Provide electric heaters at society gates so guards don't burn wood/plastic at night.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: Unhoused Shelter & SOS Hub -->
+    <section id="tab-shelter" class="grid-2 hidden">
+      <div class="card">
+        <h2>Clean-Air Night Shelter Locator</h2>
+        <p class="subtext">
+          Street sleepers face the highest toxic exposure during winter nights. Route vulnerable citizens to verified night shelters (Rain Baseras) or distribute N95 masks.
+        </p>
+        <div class="list-item">
+          <strong>Zone A — Central Bus Terminus Night Shelter</strong>
+          <span class="subtext">Capacity: 60 beds · Filtered indoor hall & warm blankets · 24/7 Open</span>
+          <button class="secondary" style="align-self:flex-start;margin-top:0.25rem;" onclick="awardAction('Shelter Referral Logged', 25)">Log Volunteer Referral (+25 pts)</button>
+        </div>
+        <div class="list-item">
+          <strong>Zone B — Railway Station East Relief Camp</strong>
+          <span class="subtext">Capacity: 45 beds · Medical checkup & mask distribution desk</span>
+          <button class="secondary" style="align-self:flex-start;margin-top:0.25rem;" onclick="awardAction('Mask Distribution Logged', 25)">Log Mask Drop (+25 pts)</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>NCAP / GRAP SOS & Community Hub</h2>
+        <p class="subtext">Direct national grievance channels and hyper-local volunteer coordination:</p>
+        <div class="list-item">
+          <strong>Central Pollution Control Board (CPCB) — SAMEER Grievance</strong>
+          <span class="subtext">Report open garbage burning, unpaved road dust, or industrial smoke under NCAP/GRAP.</span>
+          <div style="display:flex;gap:0.5rem;margin-top:0.3rem;">
+            <a href="tel:1800110031" style="text-decoration:none;"><button class="danger">Call Helpline (1800-11-0031)</button></a>
+          </div>
+        </div>
+        <div class="list-item">
+          <strong>Ward-Level WhatsApp Action Circle</strong>
+          <span class="subtext">Coordinate mask drives, water sprinkling alerts, and shelter transport with local volunteers.</span>
+          <button class="success" style="align-self:flex-start;margin-top:0.3rem;" onclick="copyWhatsAppInvite()">Copy Community WhatsApp Alert Template</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: Civic Reporting & Zero-Budget Points -->
+    <section id="tab-civic" class="grid-2 hidden">
+      <div class="card">
+        <h2>Report Local Pollution Hazard</h2>
+        <p class="subtext">Log local violations to generate an instant structured alert for municipal dispatch and earn Clean Points.</p>
+        <select id="hazardType">
+          <option value="Open Garbage / Leaf Burning">Open Garbage / Leaf Burning</option>
+          <option value="Uncovered Construction Dust">Uncovered Construction Dust</option>
+          <option value="Unhoused Citizens Needing Shelter">Unhoused Citizens Needing Shelter</option>
+          <option value="Industrial / Generator Smoke">Industrial / Generator Smoke</option>
+        </select>
+        <input type="text" id="hazardLoc" placeholder="Landmark / Ward / Sector (e.g., Near Main Market)" />
+        <button onclick="submitHazardReport()">Dispatch Alert & Earn +40 Points</button>
+        <div id="recentReports" class="checklist" style="margin-top:0.5rem;"></div>
+      </div>
+
+      <div class="card">
+        <h2>Zero-Budget Civic Recognition</h2>
+        <p class="subtext">Points unlock verified civic badges and society rankings—no cash payouts required.</p>
+        <div class="badge-row" id="badgeContainer">
+          <span class="badge unlocked">Air Scout (0 pts)</span>
+          <span class="badge" id="b-50">IAQ Defender (50 pts)</span>
+          <span class="badge" id="b-120">Shelter Ally (120 pts)</span>
+          <span class="badge" id="b-250">Clean Air Champion (250 pts)</span>
+        </div>
+        <div class="list-item" style="margin-top:0.5rem;" id="leaderboardBox">
+          <strong>Society Leaderboard (Demo Snapshot)</strong>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Nio Air Copilot · Offline-Ready PWA · Aligned with NCAP & GRAP Emergency Frameworks
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let state = JSON.parse(localStorage.getItem('nio_air_state')) || {
+      points: 0,
+      completedTasks: [],
+      reports: []
+    };
+
+    const grapProfiles = {
+      110: {
+        badge: 'GRAP Stage I — Moderate',
+        color: '#eab308',
+        text: '#0b1120',
+        advice: 'Keep windows closed during morning traffic; wet-mop floors once daily.'
+      },
+      245: {
+        badge: 'GRAP Stage II — Poor',
+        color: '#f97316',
+        text: '#fff',
+        advice: 'Restrict outdoor exertion for seniors/children; run water sprinkling on dusty lanes.'
+      },
+      385: {
+        badge: 'GRAP Stage III — Severe',
+        color: '#ef4444',
+        text: '#fff',
+        advice: 'Seal indoor gaps, wet-mop floors, and route unhoused citizens to night shelters.'
+      },
+      465: {
+        badge: 'GRAP Stage IV — Emergency',
+        color: '#a855f7',
+        text: '#fff',
+        advice: 'Strict indoor isolation; activate shared society clean-air lounges & SOS dispatch.'
+      }
+    };
+
+    function saveState() {
+      localStorage.setItem('nio_air_state', JSON.stringify(state));
+      renderPoints();
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    function updateAQIProfile() {
+      const val = document.getElementById('profileSelect').value;
+      const p = grapProfiles[val];
+      document.getElementById('aqiValue').textContent = val;
+      const badge = document.getElementById('grapBadge');
+      badge.textContent = p.badge;
+      badge.style.background = p.color;
+      badge.style.color = p.text;
+      document.getElementById('aqiAdvice').textContent = p.advice;
+      document.getElementById('grapBanner').style.borderLeftColor = p.color;
+    }
+
+    function switchTab(tabId, btn) {
+      ['iaq', 'bulk', 'shelter', 'civic'].forEach(id => {
+        document.getElementById('tab-' + id).classList.add('hidden');
+      });
+      document.getElementById('tab-' + tabId).classList.remove('hidden');
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function updateVentilationClock() {
+      const now = new Date();
+      const start = new Date(now);
+      start.setHours(13, 0, 0, 0);
+      const end = new Date(now);
+      end.setHours(16, 0, 0, 0);
+
+      const statusEl = document.getElementById('windowStatus');
+      const labelEl = document.getElementById('timerLabel');
+      const clockEl = document.getElementById('ventTimer');
+
+      let diffMs = 0;
+      if (now >= start && now < end) {
+        statusEl.textContent = 'SAFE WINDOW OPEN';
+        statusEl.style.color = '#86efac';
+        statusEl.style.borderColor = '#22c55e';
+        labelEl.textContent = 'Safe Ventilation Closes In';
+        diffMs = end - now;
+      } else {
+        statusEl.textContent = 'KEEP WINDOWS SEALED';
+        statusEl.style.color = '#fca5a5';
+        statusEl.style.borderColor = '#ef4444';
+        labelEl.textContent = 'Next Safe Window (1:00 PM) Opens In';
+        if (now >= end) start.setDate(start.getDate() + 1);
+        diffMs = start - now;
+      }
+
+      const hrs = String(Math.floor(diffMs / 3600000)).padStart(2, '0');
+      const mins = String(Math.floor((diffMs % 3600000) / 60000)).padStart(2, '0');
+      const secs = String(Math.floor((diffMs % 60000) / 1000)).padStart(2, '0');
+      clockEl.textContent = `${hrs}:${mins}:${secs}`;
+    }
+
+    let flushInterval = null;
+    function startFlushTimer() {
+      clearInterval(flushInterval);
+      let remaining = 15 * 60;
+      const bar = document.getElementById('flushBar');
+      const clock = document.getElementById('flushClock');
+      bar.classList.remove('hidden');
+      showToast('15-minute air flush started!');
+
+      flushInterval = setInterval(() => {
+        remaining--;
+        const m = String(Math.floor(remaining / 60)).padStart(2, '0');
+        const s = String(remaining % 60).padStart(2, '0');
+        clock.textContent = `${m}:${s}`;
+        if (remaining <= 0) {
+          clearInterval(flushInterval);
+          clock.textContent = '00:00 — SEAL NOW';
+          showToast('Flush complete! Seal windows now.');
+        }
+      }, 1000);
+    }
+
+    function completeTask(taskId, pts) {
+      if (state.completedTasks.includes(taskId)) {
+        showToast('Task already logged today!');
+        return;
+      }
+      state.completedTasks.push(taskId);
+      state.points += pts;
+      saveState();
+      applyTaskUI();
+      showToast(`+${pts} Clean Points earned!`);
+    }
+
+    function applyTaskUI() {
+      state.completedTasks.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.classList.add('done');
+          const btn = el.querySelector('button');
+          if (btn) btn.textContent = 'Logged ✓';
+        }
+      });
+    }
+
+    function calcBulk() {
+      const count = Math.max(1, parseInt(document.getElementById('houseCount').value || '1', 10));
+      const mrp = parseInt(document.getElementById('itemSelect').value, 10);
+      let disc = 0.08;
+      if (count >= 50) disc = 0.30;
+      else if (count >= 20) disc = 0.22;
+      else if (count >= 10) disc = 0.15;
+
+      const unit = Math.round(mrp * (1 - disc));
+      const saved = (mrp - unit) * count;
+      document.getElementById('discountPct').textContent = Math.round(disc * 100) + '%';
+      document.getElementById('unitPrice').textContent = '₹' + unit.toLocaleString('en-IN');
+      document.getElementById('totalSaved').textContent = '₹' + saved.toLocaleString('en-IN');
+    }
+
+    function pledgeGroupBuy() {
+      state.points += 30;
+      saveState();
+      showToast('+30 Clean Points for Society Group-Buy Pledge!');
+    }
+
+    function awardAction(label, pts) {
+      state.points += pts;
+      saveState();
+      showToast(`${label} (+${pts} Clean Points)`);
+    }
+
+    function copyWhatsAppInvite() {
+      const aqi = document.getElementById('aqiValue').textContent;
+      const msg = `[Nio Air Copilot Alert] Local AQI is ${aqi}. Keep indoor doors sealed until 1 PM, wet-mop floors, and help route street sleepers to the nearest Rain Basera shelter.`;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(msg);
+      }
+      showToast('WhatsApp community alert copied to clipboard!');
+    }
+
+    function submitHazardReport() {
+      const type = document.getElementById('hazardType').value;
+      const loc = document.getElementById('hazardLoc').value.trim();
+      if (!loc) {
+        showToast('Please enter a landmark or ward location first.');
+        return;
+      }
+      const entry = {
+        type,
+        loc,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      state.reports.unshift(entry);
+      state.points += 40;
+      document.getElementById('hazardLoc').value = '';
+      saveState();
+      renderReports();
+      showToast('Alert queued for municipal dispatch (+40 pts)!');
+    }
+
+    function renderReports() {
+      const box = document.getElementById('recentReports');
+      box.innerHTML = state.reports.slice(0, 4).map(r => `
+        <div class="list-item">
+          <strong>${r.type} — ${r.loc}</strong>
+          <span class="subtext">Dispatched at ${r.time} · Status: Logged for Civic Action</span>
+        </div>
+      `).join('');
+    }
+
+    function renderPoints() {
+      const pts = state.points;
+      document.getElementById('userPoints').textContent = pts;
+
+      let rank = 'Air Scout';
+      if (pts >= 250) rank = 'Clean Air Champion';
+      else if (pts >= 120) rank = 'Shelter Ally';
+      else if (pts >= 50) rank = 'IAQ Defender';
+      document.getElementById('userRank').textContent = rank;
+
+      if (pts >= 50) document.getElementById('b-50').classList.add('unlocked');
+      if (pts >= 120) document.getElementById('b-120').classList.add('unlocked');
+      if (pts >= 250) document.getElementById('b-250').classList.add('unlocked');
+
+      const standings = [
+        { name: 'Greenview Enclave', pts: 1420 },
+        { name: 'Sunrise Residency', pts: 1180 },
+        { name: 'Your Ward / Society', pts: pts, isUser: true }
+      ].sort((a, b) => b.pts - a.pts);
+
+      const lb = document.getElementById('leaderboardBox');
+      lb.innerHTML = '<strong>Society Leaderboard (Live Ranking)</strong>' + standings.map((s, idx) => `
+        <span class="subtext" style="${s.isUser ? 'color:#86efac;font-weight:700;' : ''}">
+          ${idx + 1}. ${s.name} — ${s.pts.toLocaleString('en-IN')} pts
+        </span>
+      `).join('');
+    }
+
+    // Initialize App
+    updateAQIProfile();
+    updateVentilationClock();
+    setInterval(updateVentilationClock, 1000);
+    calcBulk();
+    applyTaskUI();
+    renderReports();
+    renderPoints();
+
+    // Register Offline Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
